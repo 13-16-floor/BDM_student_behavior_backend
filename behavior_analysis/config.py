@@ -7,7 +7,6 @@ and conversion options.
 
 import os
 from dataclasses import dataclass
-from typing import Dict
 
 
 @dataclass
@@ -20,7 +19,7 @@ class DataConfig:
     LOG_DIR: str = "/home/jovyan/workspace/artifacts/logs"
 
     # SPSS files mapping
-    SPSS_FILES: Dict[str, str] = None
+    SPSS_FILES: dict[str, str] = None
 
     def __post_init__(self):
         """Initialize SPSS files mapping after dataclass creation."""
@@ -28,7 +27,7 @@ class DataConfig:
             self.SPSS_FILES = {
                 "student": "CY08MSP_STU_QQQ.SAV",
                 "teacher": "CY08MSP_TCH_QQQ.SAV",
-                "school": "CY08MSP_SCH_QQQ.SAV"
+                "school": "CY08MSP_SCH_QQQ.SAV",
             }
 
 

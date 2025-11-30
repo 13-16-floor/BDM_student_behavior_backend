@@ -6,13 +6,12 @@ conversion integrity.
 """
 
 import os
-from typing import Tuple, Optional
 
-import pyreadstat
 import pyarrow.parquet as pq
+import pyreadstat
 
-from ..utils.logger import get_logger
 from ..utils.file_utils import check_disk_space, estimate_parquet_size
+from ..utils.logger import get_logger
 
 
 class DataValidator:
@@ -22,7 +21,7 @@ class DataValidator:
         """Initialize the validator."""
         self.logger = get_logger()
 
-    def validate_spss_file(self, spss_path: str) -> Tuple[bool, Optional[str]]:
+    def validate_spss_file(self, spss_path: str) -> tuple[bool, str | None]:
         """
         Validate SPSS file before conversion.
 
@@ -60,11 +59,8 @@ class DataValidator:
             return False, f"Failed to read SPSS file: {e}"
 
     def validate_disk_space(
-        self,
-        spss_path: str,
-        output_dir: str,
-        compression: str = "snappy"
-    ) -> Tuple[bool, Optional[str]]:
+        self, spss_path: str, output_dir: str, compression: str = "snappy"
+    ) -> tuple[bool, str | None]:
         """
         Validate sufficient disk space for conversion.
 
@@ -83,16 +79,12 @@ class DataValidator:
         required_space = int(estimated_parquet_size * 1.2)
 
         if not check_disk_space(output_dir, required_space):
-            required_gb = required_space / (1024 ** 3)
+            required_gb = required_space / (1024**3)
             return False, f"Insufficient disk space. Required: {required_gb:.2f} GB"
 
         return True, None
 
-    def validate_conversion(
-        self,
-        spss_path: str,
-        parquet_path: str
-    ) -> Tuple[bool, Optional[str]]:
+    def validate_conversion(self, spss_path: str, parquet_path: str) -> tuple[bool, str | None]:
         """
         Validate conversion result.
 
@@ -138,8 +130,7 @@ class DataValidator:
                 )
 
             self.logger.info(
-                f"Conversion validation passed: {parquet_rows:,} rows, "
-                f"{parquet_cols} columns"
+                f"Conversion validation passed: {parquet_rows:,} rows, " f"{parquet_cols} columns"
             )
             return True, None
 
@@ -147,12 +138,8 @@ class DataValidator:
             return False, f"Validation failed: {e}"
 
     def validate_all(
-        self,
-        spss_path: str,
-        parquet_path: str,
-        output_dir: str,
-        compression: str = "snappy"
-    ) -> Tuple[bool, Optional[str]]:
+        self, spss_path: str, parquet_path: str, output_dir: str, compression: str = "snappy"
+    ) -> tuple[bool, str | None]:
         """
         Run all validation checks.
 
@@ -184,7 +171,7 @@ class DataValidator:
         return True, None
 
 
-def validate_spss_file(spss_path: str) -> Tuple[bool, Optional[str]]:
+def validate_spss_file(spss_path: str) -> tuple[bool, str | None]:
     """
     Convenience function to validate SPSS file.
 
@@ -198,7 +185,7 @@ def validate_spss_file(spss_path: str) -> Tuple[bool, Optional[str]]:
     return validator.validate_spss_file(spss_path)
 
 
-def validate_conversion(spss_path: str, parquet_path: str) -> Tuple[bool, Optional[str]]:
+def validate_conversion(spss_path: str, parquet_path: str) -> tuple[bool, str | None]:
     """
     Convenience function to validate conversion.
 

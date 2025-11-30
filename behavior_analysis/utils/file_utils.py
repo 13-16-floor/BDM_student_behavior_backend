@@ -5,11 +5,9 @@ Provides common file operations like directory creation, disk space checking,
 and conversion status tracking.
 """
 
-import os
 import json
+import os
 import shutil
-from pathlib import Path
-from typing import Dict, Optional
 from datetime import datetime
 
 
@@ -64,7 +62,7 @@ def get_file_size(file_path: str, human_readable: bool = True) -> str:
         return str(size_bytes)
 
     # Convert to human-readable format
-    for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+    for unit in ["B", "KB", "MB", "GB", "TB"]:
         if size_bytes < 1024.0:
             return f"{size_bytes:.2f} {unit}"
         size_bytes /= 1024.0
@@ -115,9 +113,7 @@ def is_conversion_completed(parquet_path: str) -> bool:
 
 
 def mark_conversion_completed(
-    parquet_path: str,
-    spss_path: str,
-    metadata: Optional[Dict] = None
+    parquet_path: str, spss_path: str, metadata: dict | None = None
 ) -> None:
     """
     Mark conversion as completed by creating a marker file.
@@ -139,18 +135,18 @@ def mark_conversion_completed(
         "parquet_path": parquet_path,
         "spss_size": os.path.getsize(spss_path),
         "parquet_size": os.path.getsize(parquet_path),
-        "spss_mtime": os.path.getmtime(spss_path)
+        "spss_mtime": os.path.getmtime(spss_path),
     }
 
     if metadata:
         conversion_info["metadata"] = metadata
 
     # Write marker file
-    with open(marker_path, 'w', encoding='utf-8') as f:
+    with open(marker_path, "w", encoding="utf-8") as f:
         json.dump(conversion_info, f, indent=2)
 
 
-def get_conversion_info(parquet_path: str) -> Optional[Dict]:
+def get_conversion_info(parquet_path: str) -> dict | None:
     """
     Get conversion information from marker file.
 
@@ -166,7 +162,7 @@ def get_conversion_info(parquet_path: str) -> Optional[Dict]:
         return None
 
     try:
-        with open(marker_path, 'r', encoding='utf-8') as f:
+        with open(marker_path, encoding="utf-8") as f:
             return json.load(f)
     except (json.JSONDecodeError, OSError):
         return None
@@ -224,7 +220,7 @@ def cleanup_conversion_markers(parquet_dir: str) -> int:
 
     count = 0
     for filename in os.listdir(parquet_dir):
-        if filename.startswith('.') and filename.endswith('.converted'):
+        if filename.startswith(".") and filename.endswith(".converted"):
             marker_path = os.path.join(parquet_dir, filename)
 
             # Extract parquet filename from marker filename
@@ -255,11 +251,11 @@ def estimate_parquet_size(spss_size: int, compression: str = "snappy") -> int:
     """
     # Compression ratios (approximate)
     compression_ratios = {
-        "none": 0.8,      # Slight reduction due to columnar format
-        "snappy": 0.5,    # 50-60% compression
-        "gzip": 0.35,     # 30-40% compression
-        "lz4": 0.6,       # 60-70% compression
-        "zstd": 0.4       # 40-50% compression
+        "none": 0.8,  # Slight reduction due to columnar format
+        "snappy": 0.5,  # 50-60% compression
+        "gzip": 0.35,  # 30-40% compression
+        "lz4": 0.6,  # 60-70% compression
+        "zstd": 0.4,  # 40-50% compression
     }
 
     ratio = compression_ratios.get(compression.lower(), 0.5)

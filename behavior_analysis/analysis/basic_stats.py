@@ -4,15 +4,15 @@ Basic statistical analysis module.
 Provides functions for computing statistical measures on Spark DataFrames.
 """
 
-from typing import Optional, Dict, Any, List
+from typing import Any
 
-from pyspark.sql import DataFrame
 import pyspark.sql.functions as F
+from pyspark.sql import DataFrame
 
 from ..utils.logger import get_logger
 
 
-def calculate_column_mean(df: DataFrame, column_name: str) -> Optional[float]:
+def calculate_column_mean(df: DataFrame, column_name: str) -> float | None:
     """
     Calculate the mean (average) of a column.
 
@@ -46,7 +46,7 @@ def calculate_column_mean(df: DataFrame, column_name: str) -> Optional[float]:
     return None
 
 
-def get_column_statistics(df: DataFrame, column_name: str) -> Dict[str, Any]:
+def get_column_statistics(df: DataFrame, column_name: str) -> dict[str, Any]:
     """
     Get comprehensive statistics for a column.
 
@@ -82,7 +82,7 @@ def get_column_statistics(df: DataFrame, column_name: str) -> Dict[str, Any]:
         F.mean(F.col(column_name)).alias("mean"),
         F.stddev(F.col(column_name)).alias("stddev"),
         F.min(F.col(column_name)).alias("min"),
-        F.max(F.col(column_name)).alias("max")
+        F.max(F.col(column_name)).alias("max"),
     ).collect()[0]
 
     # Count nulls
@@ -101,14 +101,14 @@ def get_column_statistics(df: DataFrame, column_name: str) -> Dict[str, Any]:
         "max": float(stats["max"]) if stats["max"] is not None else None,
         "null_count": null_count,
         "total_rows": total_rows,
-        "null_percentage": (null_count / total_rows * 100) if total_rows > 0 else 0
+        "null_percentage": (null_count / total_rows * 100) if total_rows > 0 else 0,
     }
 
     logger.info(f"Statistics computed for {column_name}")
     return result
 
 
-def describe_dataset(df: DataFrame, columns: Optional[List[str]] = None) -> Dict[str, Any]:
+def describe_dataset(df: DataFrame, columns: list[str] | None = None) -> dict[str, Any]:
     """
     Generate a summary description of the dataset.
 
@@ -129,9 +129,12 @@ def describe_dataset(df: DataFrame, columns: Optional[List[str]] = None) -> Dict
 
     # If no columns specified, use numeric columns
     if columns is None:
-        numeric_types = ['int', 'bigint', 'float', 'double', 'decimal']
-        columns = [field.name for field in df.schema.fields
-                   if any(t in str(field.dataType).lower() for t in numeric_types)]
+        numeric_types = ["int", "bigint", "float", "double", "decimal"]
+        columns = [
+            field.name
+            for field in df.schema.fields
+            if any(t in str(field.dataType).lower() for t in numeric_types)
+        ]
 
     # Get Spark's describe() output
     describe_df = df.describe(columns) if columns else df.describe()
@@ -148,14 +151,14 @@ def describe_dataset(df: DataFrame, columns: Optional[List[str]] = None) -> Dict
         "total_rows": total_rows,
         "total_columns": total_columns,
         "analyzed_columns": columns,
-        "summary": summary_dict
+        "summary": summary_dict,
     }
 
     logger.info(f"Dataset description completed: {total_rows:,} rows, {total_columns} columns")
     return result
 
 
-def get_missing_values_report(df: DataFrame) -> Dict[str, Dict[str, Any]]:
+def get_missing_values_report(df: DataFrame) -> dict[str, dict[str, Any]]:
     """
     Generate a report of missing values for all columns.
 
@@ -182,7 +185,7 @@ def get_missing_values_report(df: DataFrame) -> Dict[str, Dict[str, Any]]:
         report[column] = {
             "null_count": null_count,
             "non_null_count": total_rows - null_count,
-            "null_percentage": null_percentage
+            "null_percentage": null_percentage,
         }
 
     logger.info("Missing values report completed")
@@ -190,11 +193,8 @@ def get_missing_values_report(df: DataFrame) -> Dict[str, Dict[str, Any]]:
 
 
 def calculate_correlation(
-    df: DataFrame,
-    col1: str,
-    col2: str,
-    method: str = "pearson"
-) -> Optional[float]:
+    df: DataFrame, col1: str, col2: str, method: str = "pearson"
+) -> float | None:
     """
     Calculate correlation between two columns.
 
@@ -231,7 +231,7 @@ def calculate_correlation(
     return correlation
 
 
-def print_statistics_report(stats: Dict[str, Any]) -> None:
+def print_statistics_report(stats: dict[str, Any]) -> None:
     """
     Print a formatted statistics report.
 
@@ -246,13 +246,13 @@ def print_statistics_report(stats: Dict[str, Any]) -> None:
     print(f"Null Count:        {stats['null_count']:,} ({stats['null_percentage']:.2f}%)")
     print("-" * 60)
 
-    if stats['mean'] is not None:
+    if stats["mean"] is not None:
         print(f"Mean:              {stats['mean']:.4f}")
-    if stats['stddev'] is not None:
+    if stats["stddev"] is not None:
         print(f"Std Dev:           {stats['stddev']:.4f}")
-    if stats['min'] is not None:
+    if stats["min"] is not None:
         print(f"Min:               {stats['min']:.4f}")
-    if stats['max'] is not None:
+    if stats["max"] is not None:
         print(f"Max:               {stats['max']:.4f}")
 
     print("=" * 60 + "\n")

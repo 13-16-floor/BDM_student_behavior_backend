@@ -7,18 +7,16 @@ Provides centralized logging functionality with both file and console output.
 import logging
 import os
 from datetime import datetime
-from typing import Optional
-
 
 # Global logger instance
-_logger: Optional[logging.Logger] = None
+_logger: logging.Logger | None = None
 
 
 def setup_logger(
     name: str = "behavior_analysis",
     log_dir: str = "/home/jovyan/workspace/artifacts/logs",
     level: int = logging.INFO,
-    console_output: bool = True
+    console_output: bool = True,
 ) -> logging.Logger:
     """
     Set up and configure the application logger.
@@ -56,16 +54,15 @@ def setup_logger(
     # Create formatters
     detailed_formatter = logging.Formatter(
         fmt="[%(asctime)s] [%(levelname)-8s] [%(name)s:%(lineno)d] %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S"
+        datefmt="%Y-%m-%d %H:%M:%S",
     )
 
     simple_formatter = logging.Formatter(
-        fmt="[%(asctime)s] %(levelname)s: %(message)s",
-        datefmt="%H:%M:%S"
+        fmt="[%(asctime)s] %(levelname)s: %(message)s", datefmt="%H:%M:%S"
     )
 
     # File handler (detailed format)
-    file_handler = logging.FileHandler(log_filename, mode='a', encoding='utf-8')
+    file_handler = logging.FileHandler(log_filename, mode="a", encoding="utf-8")
     file_handler.setLevel(level)
     file_handler.setFormatter(detailed_formatter)
     logger.addHandler(file_handler)

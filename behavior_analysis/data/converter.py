@@ -7,23 +7,21 @@ large files through batched processing.
 
 import os
 import tempfile
-from typing import Optional
 
-import pyreadstat
 import pyarrow as pa
 import pyarrow.parquet as pq
+import pyreadstat
 
 from ..config import ConversionConfig
-from ..utils.logger import get_logger
 from ..utils.file_utils import (
-    ensure_directory_exists,
     check_disk_space,
+    ensure_directory_exists,
+    estimate_parquet_size,
     get_file_size,
-    is_conversion_completed,
     mark_conversion_completed,
     should_reconvert,
-    estimate_parquet_size
 )
+from ..utils.logger import get_logger
 
 
 class SPSSToParquetConverter:
@@ -34,7 +32,7 @@ class SPSSToParquetConverter:
     (processed in batches to avoid memory issues).
     """
 
-    def __init__(self, config: Optional[ConversionConfig] = None):
+    def __init__(self, config: ConversionConfig | None = None):
         """
         Initialize the converter.
 
@@ -59,12 +57,7 @@ class SPSSToParquetConverter:
         """
         return not should_reconvert(parquet_path, spss_path)
 
-    def convert_file(
-        self,
-        spss_path: str,
-        parquet_path: str,
-        force: bool = False
-    ) -> bool:
+    def convert_file(self, spss_path: str, parquet_path: str, force: bool = False) -> bool:
         """
         Convert SPSS file to Parquet format.
 
@@ -102,9 +95,7 @@ class SPSSToParquetConverter:
         # Check disk space
         estimated_size = estimate_parquet_size(spss_size, self.config.COMPRESSION)
         if not check_disk_space(parquet_dir, estimated_size):
-            raise IOError(
-                f"Insufficient disk space. Required: {estimated_size / (1024**3):.2f} GB"
-            )
+            raise OSError(f"Insufficient disk space. Required: {estimated_size / (1024**3):.2f} GB")
 
         # Choose conversion strategy based on file size
         try:
@@ -126,8 +117,8 @@ class SPSSToParquetConverter:
                     metadata={
                         "row_count": meta.number_rows,
                         "column_count": meta.number_columns,
-                        "compression": self.config.COMPRESSION
-                    }
+                        "compression": self.config.COMPRESSION,
+                    },
                 )
 
                 result_size = get_file_size(parquet_path)
@@ -160,20 +151,14 @@ class SPSSToParquetConverter:
         self.logger.info("Reading SPSS file into memory...")
         df, meta = pyreadstat.read_sav(spss_path, user_missing=True)
 
-        self.logger.info(
-            f"Loaded {meta.number_rows:,} rows, {meta.number_columns} columns"
-        )
+        self.logger.info(f"Loaded {meta.number_rows:,} rows, {meta.number_columns} columns")
 
         # Convert to PyArrow Table
         self.logger.info("Converting to Parquet format...")
         table = pa.Table.from_pandas(df)
 
         # Write to Parquet
-        pq.write_table(
-            table,
-            parquet_path,
-            compression=self.config.COMPRESSION
-        )
+        pq.write_table(table, parquet_path, compression=self.config.COMPRESSION)
 
         return True
 
@@ -198,10 +183,7 @@ class SPSSToParquetConverter:
         )
 
         # Use temporary file to ensure atomic write
-        temp_fd, temp_path = tempfile.mkstemp(
-            suffix='.parquet',
-            dir=os.path.dirname(parquet_path)
-        )
+        temp_fd, temp_path = tempfile.mkstemp(suffix=".parquet", dir=os.path.dirname(parquet_path))
         os.close(temp_fd)
 
         writer = None
@@ -219,10 +201,7 @@ class SPSSToParquetConverter:
 
                 # Read batch
                 df, _ = pyreadstat.read_sav(
-                    spss_path,
-                    row_offset=offset,
-                    row_limit=rows_to_read,
-                    user_missing=True
+                    spss_path, row_offset=offset, row_limit=rows_to_read, user_missing=True
                 )
 
                 # Convert to PyArrow Table
@@ -231,9 +210,7 @@ class SPSSToParquetConverter:
                 # Initialize writer on first batch
                 if writer is None:
                     writer = pq.ParquetWriter(
-                        temp_path,
-                        table.schema,
-                        compression=self.config.COMPRESSION
+                        temp_path, table.schema, compression=self.config.COMPRESSION
                     )
 
                 # Write batch
@@ -253,7 +230,7 @@ class SPSSToParquetConverter:
             self.logger.info(f"Successfully processed {batch_count} batches")
             return True
 
-        except Exception as e:
+        except Exception:
             # Clean up on error
             if writer:
                 writer.close()
@@ -265,11 +242,7 @@ class SPSSToParquetConverter:
             raise
 
     def convert_all(
-        self,
-        spss_files: dict,
-        data_dir: str,
-        parquet_dir: str,
-        force: bool = False
+        self, spss_files: dict, data_dir: str, parquet_dir: str, force: bool = False
     ) -> dict:
         """
         Convert multiple SPSS files to Parquet.

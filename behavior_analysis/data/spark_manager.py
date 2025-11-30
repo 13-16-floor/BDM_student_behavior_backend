@@ -21,10 +21,10 @@ class SparkSessionManager:
     context manager support for automatic cleanup.
     """
 
-    _instance: Optional['SparkSessionManager'] = None
-    _session: Optional[SparkSession] = None
+    _instance: Optional["SparkSessionManager"] = None
+    _session: SparkSession | None = None
 
-    def __new__(cls, config: Optional[SparkConfig] = None):
+    def __new__(cls, config: SparkConfig | None = None):
         """
         Create singleton instance.
 
@@ -39,7 +39,7 @@ class SparkSessionManager:
             cls._instance._initialized = False
         return cls._instance
 
-    def __init__(self, config: Optional[SparkConfig] = None):
+    def __init__(self, config: SparkConfig | None = None):
         """
         Initialize the manager.
 
@@ -70,8 +70,7 @@ class SparkSessionManager:
             self.logger.info("Creating Spark session...")
 
             builder = (
-                SparkSession.builder
-                .appName(self.config.APP_NAME)
+                SparkSession.builder.appName(self.config.APP_NAME)
                 .master(self.config.MASTER)
                 .config("spark.driver.memory", self.config.DRIVER_MEMORY)
                 .config("spark.executor.memory", self.config.EXECUTOR_MEMORY)
@@ -86,15 +85,13 @@ class SparkSessionManager:
                 builder = builder.config("spark.sql.adaptive.enabled", "true")
 
             if self.config.ADAPTIVE_COALESCE_PARTITIONS:
-                builder = builder.config(
-                    "spark.sql.adaptive.coalescePartitions.enabled", "true"
-                )
+                builder = builder.config("spark.sql.adaptive.coalescePartitions.enabled", "true")
 
             # Create or get session
             session = builder.getOrCreate()
 
             # Log configuration
-            self.logger.info(f"Spark session created successfully")
+            self.logger.info("Spark session created successfully")
             self.logger.info(f"  App Name: {self.config.APP_NAME}")
             self.logger.info(f"  Master: {self.config.MASTER}")
             self.logger.info(f"  Driver Memory: {self.config.DRIVER_MEMORY}")
@@ -164,7 +161,7 @@ class SparkSessionManager:
             cls._session = None
 
 
-def get_spark_session(config: Optional[SparkConfig] = None) -> SparkSession:
+def get_spark_session(config: SparkConfig | None = None) -> SparkSession:
     """
     Convenience function to get Spark session.
 

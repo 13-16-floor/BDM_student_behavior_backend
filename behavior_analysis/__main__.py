@@ -7,19 +7,21 @@ This module orchestrates the complete workflow:
 3. Perform statistical analysis
 """
 
-import os
 import sys
-from typing import Optional
 
+from .analysis.basic_stats import (
+    calculate_column_mean,
+    get_column_statistics,
+    print_statistics_report,
+)
 from .config import load_config
-from .utils.logger import setup_logger
-from .utils.file_utils import ensure_directory_exists
 from .data.converter import SPSSToParquetConverter
 from .data.spark_manager import SparkSessionManager
-from .analysis.basic_stats import calculate_column_mean, get_column_statistics, print_statistics_report
+from .utils.file_utils import ensure_directory_exists
+from .utils.logger import setup_logger
 
 
-def main(target_column: Optional[str] = None) -> None:
+def main(target_column: str | None = None) -> None:
     """
     Main application entrypoint.
 
@@ -71,19 +73,19 @@ def main(target_column: Optional[str] = None) -> None:
 
             # Check if already converted
             if converter.is_converted(parquet_path, spss_path):
-                logger.info(f"  Status: Already converted, skipping...")
+                logger.info("  Status: Already converted, skipping...")
                 print(f"✓ {dataset_name}: Already converted")
             else:
-                logger.info(f"  Status: Converting...")
+                logger.info("  Status: Converting...")
                 print(f"⟳ {dataset_name}: Converting...")
 
                 success = converter.convert_file(spss_path, parquet_path)
 
                 if success:
-                    logger.info(f"  Result: Conversion successful")
+                    logger.info("  Result: Conversion successful")
                     print(f"✓ {dataset_name}: Conversion completed")
                 else:
-                    logger.error(f"  Result: Conversion failed")
+                    logger.error("  Result: Conversion failed")
                     print(f"✗ {dataset_name}: Conversion failed")
 
         # 4. Spark Analysis Phase
@@ -101,7 +103,9 @@ def main(target_column: Optional[str] = None) -> None:
             student_df = spark.read.parquet(student_parquet_path)
             row_count = student_df.count()
 
-            logger.info(f"Student data loaded: {row_count:,} rows, {len(student_df.columns)} columns")
+            logger.info(
+                f"Student data loaded: {row_count:,} rows, {len(student_df.columns)} columns"
+            )
             print(f"\n✓ Loaded student data: {row_count:,} rows")
 
             # Check if target column exists
@@ -134,7 +138,7 @@ def main(target_column: Optional[str] = None) -> None:
                 print_statistics_report(stats)
 
                 # Log summary
-                logger.info(f"\nAnalysis completed successfully:")
+                logger.info("\nAnalysis completed successfully:")
                 logger.info(f"  Column: {target_column}")
                 logger.info(f"  Mean: {mean_value:.4f}")
                 logger.info(f"  Non-null count: {stats['count']:,}")
