@@ -17,7 +17,7 @@ from behavior_analysis.analysis.score_clustering import (
 )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="session")  # type: ignore[misc]
 def spark() -> SparkSession:
     """Create a Spark session for testing."""
     return (
@@ -29,7 +29,7 @@ def spark() -> SparkSession:
     )
 
 
-@pytest.fixture
+@pytest.fixture  # type: ignore[misc]
 def sample_student_data(spark: SparkSession) -> DataFrame:
     """Create sample student data for testing."""
     data = [
@@ -48,25 +48,25 @@ def sample_student_data(spark: SparkSession) -> DataFrame:
 class TestScoreCategorization:
     """Tests for score categorization logic."""
 
-    def test_categorize_low_scores(self, spark: SparkSession):
+    def test_categorize_low_scores(self, spark: SparkSession) -> None:
         """Test that scores < 482 are categorized as 'low'."""
         df = spark.createDataFrame([(400,), (481.9,), (0,)], schema="PV1MATH DOUBLE")
         result = df.withColumn("category", categorize_score()).select("category").collect()
         assert all(row["category"] == "low" for row in result)
 
-    def test_categorize_middle_scores(self, spark: SparkSession):
+    def test_categorize_middle_scores(self, spark: SparkSession) -> None:
         """Test that scores 482-606 are categorized as 'middle'."""
         df = spark.createDataFrame([(482,), (550,), (606,)], schema="PV1MATH DOUBLE")
         result = df.withColumn("category", categorize_score()).select("category").collect()
         assert all(row["category"] == "middle" for row in result)
 
-    def test_categorize_high_scores(self, spark: SparkSession):
+    def test_categorize_high_scores(self, spark: SparkSession) -> None:
         """Test that scores ≥ 607 are categorized as 'high'."""
         df = spark.createDataFrame([(607,), (650,), (800,)], schema="PV1MATH DOUBLE")
         result = df.withColumn("category", categorize_score()).select("category").collect()
         assert all(row["category"] == "high" for row in result)
 
-    def test_boundary_values(self, spark: SparkSession):
+    def test_boundary_values(self, spark: SparkSession) -> None:
         """Test boundary values are correctly categorized."""
         df = spark.createDataFrame(
             [(481.9, "low"), (482.0, "middle"), (606.0, "middle"), (607.0, "high")],
@@ -82,13 +82,13 @@ class TestScoreCategorization:
 class TestClusterLabeling:
     """Tests for adding cluster labels to DataFrame."""
 
-    def test_add_cluster_labels_basic(self, sample_student_data: DataFrame):
+    def test_add_cluster_labels_basic(self, sample_student_data: DataFrame) -> None:
         """Test basic cluster label addition."""
         result = add_cluster_labels(sample_student_data)
         assert "score_cluster" in result.columns
         assert result.count() == 8
 
-    def test_cluster_distribution(self, sample_student_data: DataFrame):
+    def test_cluster_distribution(self, sample_student_data: DataFrame) -> None:
         """Test that clusters are correctly distributed."""
         result = add_cluster_labels(sample_student_data)
         cluster_counts = result.groupBy("score_cluster").count().collect()
@@ -99,13 +99,13 @@ class TestClusterLabeling:
         assert cluster_dict.get("middle", 0) == 3
         assert cluster_dict.get("high", 0) == 3
 
-    def test_custom_cluster_column_name(self, sample_student_data: DataFrame):
+    def test_custom_cluster_column_name(self, sample_student_data: DataFrame) -> None:
         """Test using a custom cluster column name."""
         result = add_cluster_labels(sample_student_data, cluster_column="custom_level")
         assert "custom_level" in result.columns
         assert result.count() == 8
 
-    def test_missing_score_column_raises_error(self, sample_student_data: DataFrame):
+    def test_missing_score_column_raises_error(self, sample_student_data: DataFrame) -> None:
         """Test that missing score column raises ValueError."""
         with pytest.raises(ValueError, match="not found"):
             add_cluster_labels(sample_student_data, score_column="INVALID_COLUMN")
@@ -114,7 +114,7 @@ class TestClusterLabeling:
 class TestClusterStatistics:
     """Tests for cluster statistics calculation."""
 
-    def test_get_cluster_statistics_basic(self, sample_student_data: DataFrame):
+    def test_get_cluster_statistics_basic(self, sample_student_data: DataFrame) -> None:
         """Test basic statistics calculation."""
         clustered_df = add_cluster_labels(sample_student_data)
         stats = get_cluster_statistics(clustered_df)
@@ -124,7 +124,7 @@ class TestClusterStatistics:
         assert "middle" in stats
         assert "high" in stats
 
-    def test_statistics_keys(self, sample_student_data: DataFrame):
+    def test_statistics_keys(self, sample_student_data: DataFrame) -> None:
         """Test that all required statistics keys are present."""
         clustered_df = add_cluster_labels(sample_student_data)
         stats = get_cluster_statistics(clustered_df)
@@ -143,7 +143,7 @@ class TestClusterStatistics:
             for key in required_keys:
                 assert key in level_stats
 
-    def test_sample_count_accuracy(self, sample_student_data: DataFrame):
+    def test_sample_count_accuracy(self, sample_student_data: DataFrame) -> None:
         """Test that sample counts are accurate."""
         clustered_df = add_cluster_labels(sample_student_data)
         stats = get_cluster_statistics(clustered_df)
@@ -153,7 +153,7 @@ class TestClusterStatistics:
         assert stats["middle"]["sample_count"] == 3
         assert stats["high"]["sample_count"] == 3
 
-    def test_population_percentage_sum(self, sample_student_data: DataFrame):
+    def test_population_percentage_sum(self, sample_student_data: DataFrame) -> None:
         """Test that population percentages sum to approximately 100%."""
         clustered_df = add_cluster_labels(sample_student_data)
         stats = get_cluster_statistics(clustered_df)
@@ -161,7 +161,7 @@ class TestClusterStatistics:
         total_percentage = sum(s["population_percentage"] for s in stats.values())
         assert abs(total_percentage - 100.0) < 0.01
 
-    def test_weighted_statistics(self, sample_student_data: DataFrame):
+    def test_weighted_statistics(self, sample_student_data: DataFrame) -> None:
         """Test that weighted statistics differ from unweighted when weights vary."""
         clustered_df = add_cluster_labels(sample_student_data)
         stats = get_cluster_statistics(clustered_df)
@@ -174,13 +174,13 @@ class TestClusterStatistics:
                 assert 0 <= level_stats["mean_score"] <= 1000
                 assert 0 <= level_stats["weighted_mean_score"] <= 1000
 
-    def test_missing_weight_column_raises_error(self, sample_student_data: DataFrame):
+    def test_missing_weight_column_raises_error(self, sample_student_data: DataFrame) -> None:
         """Test that missing weight column raises ValueError."""
         clustered_df = add_cluster_labels(sample_student_data)
         with pytest.raises(ValueError, match="not found"):
             get_cluster_statistics(clustered_df, weight_column="INVALID_WEIGHT")
 
-    def test_score_ranges(self, sample_student_data: DataFrame):
+    def test_score_ranges(self, sample_student_data: DataFrame) -> None:
         """Test that min/max scores are within expected ranges."""
         clustered_df = add_cluster_labels(sample_student_data)
         stats = get_cluster_statistics(clustered_df)
@@ -199,7 +199,7 @@ class TestClusterStatistics:
 class TestIntegration:
     """Integration tests for the complete clustering workflow."""
 
-    def test_end_to_end_clustering(self, sample_student_data: DataFrame):
+    def test_end_to_end_clustering(self, sample_student_data: DataFrame) -> None:
         """Test complete clustering workflow."""
         # Step 1: Add labels
         clustered_df = add_cluster_labels(sample_student_data)
@@ -212,7 +212,7 @@ class TestIntegration:
         assert all(isinstance(s["sample_count"], int) for s in stats.values())
         assert all(isinstance(s["population_percentage"], float) for s in stats.values())
 
-    def test_data_consistency(self, sample_student_data: DataFrame):
+    def test_data_consistency(self, sample_student_data: DataFrame) -> None:
         """Test that clustering doesn't lose or duplicate data."""
         original_count = sample_student_data.count()
         clustered_df = add_cluster_labels(sample_student_data)
