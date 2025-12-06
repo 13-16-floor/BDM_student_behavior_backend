@@ -10,6 +10,17 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 
+def _detect_environment() -> str:
+    """Detect execution environment (docker cluster, docker local, or local)."""
+    # Check if running in Docker with Spark cluster
+    if os.environ.get("SPARK_MASTER"):
+        return "docker_cluster"
+    # Check if running in Docker Jupyter
+    if os.path.exists("/home/jovyan"):
+        return "docker_local"
+    return "local"
+
+
 @dataclass
 class DataConfig:
     """Configuration for data paths and files."""
@@ -32,18 +43,32 @@ class DataConfig:
             }
 
 
+def _get_spark_master() -> str:
+    """Get appropriate Spark master URL based on environment."""
+    env = _detect_environment()
+    if env == "docker_cluster":
+        # Use Spark cluster master from environment variable
+        return os.environ.get("SPARK_MASTER", "spark://spark-master:7077")
+    elif env == "docker_local":
+        # Use local mode in Docker
+        return "local[*]"
+    else:
+        # Use local mode on host machine
+        return "local[4]"
+
+
 @dataclass
 class SparkConfig:
     """Configuration for Spark session parameters."""
 
     # Spark memory configuration (optimized for 19GB RAM environment)
-    DRIVER_MEMORY: str = "6g"
-    EXECUTOR_MEMORY: str = "8g"
-    EXECUTOR_CORES: int = 4
+    DRIVER_MEMORY: str = "2g"
+    EXECUTOR_MEMORY: str = "2g"
+    EXECUTOR_CORES: int = 2
 
     # Spark optimization parameters
-    SQL_SHUFFLE_PARTITIONS: int = 20  # Default 200 is too high for local
-    MAX_RESULT_SIZE: str = "2g"
+    SQL_SHUFFLE_PARTITIONS: int = 8  # Adjusted for cluster
+    MAX_RESULT_SIZE: str = "1g"
 
     # Spark features
     ADAPTIVE_ENABLED: bool = True
@@ -52,8 +77,8 @@ class SparkConfig:
     # Serialization
     SERIALIZER: str = "org.apache.spark.serializer.KryoSerializer"
 
-    # Master configuration
-    MASTER: str = "local[4]"  # Use 4 cores, avoid over-parallelization
+    # Master configuration (auto-detected based on environment)
+    MASTER: str = field(default_factory=_get_spark_master)
     APP_NAME: str = "BehaviorAnalysis"
 
 
@@ -102,16 +127,23 @@ class AppConfig:
         return str(Path(self.data.PARQUET_DIR) / f"{dataset_name}.parquet")
 
 
-# Global configuration instance
-_config = None
+# Global configuration instance cache
+class _ConfigCache:  # noqa: N801
+    """Cache for application configuration."""
+
+    _instance: AppConfig | None = None
+
+    @classmethod
+    def get(cls) -> AppConfig:
+        """Get or create the global configuration instance."""
+        if cls._instance is None:
+            cls._instance = AppConfig()
+        return cls._instance
 
 
 def get_config() -> AppConfig:
     """Get the global configuration instance (singleton pattern)."""
-    global _config
-    if _config is None:
-        _config = AppConfig()
-    return _config
+    return _ConfigCache.get()
 
 
 def load_config() -> AppConfig:
@@ -121,8 +153,10 @@ def load_config() -> AppConfig:
     Environment variables can override default values:
     - BA_DATA_DIR: Override data directory
     - BA_PARQUET_DIR: Override parquet output directory
+    - BA_LOG_DIR: Override log directory
     - BA_CHUNK_SIZE: Override conversion chunk size
     - BA_COMPRESSION: Override parquet compression algorithm
+    - SPARK_MASTER: Override Spark master URL (for cluster mode)
 
     Returns:
         AppConfig: The application configuration instance
@@ -150,6 +184,9 @@ def load_config() -> AppConfig:
 
     if "BA_SPARK_EXECUTOR_MEMORY" in os.environ:
         config.spark.EXECUTOR_MEMORY = os.environ["BA_SPARK_EXECUTOR_MEMORY"]
+
+    # Refresh Spark master based on updated environment
+    config.spark.MASTER = _get_spark_master()
 
     return config
 
