@@ -35,14 +35,16 @@ def sample_student_data(spark: SparkSession) -> DataFrame:
     data = [
         ("S001", 450.5, 1.2),  # Low
         ("S002", 500.0, 1.1),  # Middle
-        ("S003", 480.0, 1.0),  # Middle (boundary)
+        ("S003", 482.0, 1.0),  # Middle (boundary - exactly 482)
         ("S004", 620.0, 0.9),  # High
         ("S005", 350.0, 1.3),  # Low
-        ("S006", 606.0, 1.0),  # Middle (boundary)
-        ("S007", 607.0, 0.95),  # High (boundary)
+        ("S006", 606.0, 1.0),  # Middle (boundary - exactly 606)
+        ("S007", 607.0, 0.95),  # High (boundary - exactly 607)
         ("S008", 750.0, 1.15),  # High
     ]
-    return spark.createDataFrame(data, schema="student_id STRING, PV1MATH DOUBLE, W_FSTUWT DOUBLE")
+    return spark.createDataFrame(
+        data, schema="student_id STRING, PV1MATH DOUBLE, W_FSTUWT DOUBLE"
+    )
 
 
 class TestScoreCategorization:
@@ -50,20 +52,32 @@ class TestScoreCategorization:
 
     def test_categorize_low_scores(self, spark: SparkSession) -> None:
         """Test that scores < 482 are categorized as 'low'."""
-        df = spark.createDataFrame([(400,), (481.9,), (0,)], schema="PV1MATH DOUBLE")
-        result = df.withColumn("category", categorize_score()).select("category").collect()
+        df = spark.createDataFrame(
+            [(400.0,), (481.9,), (0.0,)], schema="PV1MATH DOUBLE"
+        )
+        result = (
+            df.withColumn("category", categorize_score()).select("category").collect()
+        )
         assert all(row["category"] == "low" for row in result)
 
     def test_categorize_middle_scores(self, spark: SparkSession) -> None:
         """Test that scores 482-606 are categorized as 'middle'."""
-        df = spark.createDataFrame([(482,), (550,), (606,)], schema="PV1MATH DOUBLE")
-        result = df.withColumn("category", categorize_score()).select("category").collect()
+        df = spark.createDataFrame(
+            [(482.0,), (550.0,), (606.0,)], schema="PV1MATH DOUBLE"
+        )
+        result = (
+            df.withColumn("category", categorize_score()).select("category").collect()
+        )
         assert all(row["category"] == "middle" for row in result)
 
     def test_categorize_high_scores(self, spark: SparkSession) -> None:
         """Test that scores ≥ 607 are categorized as 'high'."""
-        df = spark.createDataFrame([(607,), (650,), (800,)], schema="PV1MATH DOUBLE")
-        result = df.withColumn("category", categorize_score()).select("category").collect()
+        df = spark.createDataFrame(
+            [(607.0,), (650.0,), (800.0,)], schema="PV1MATH DOUBLE"
+        )
+        result = (
+            df.withColumn("category", categorize_score()).select("category").collect()
+        )
         assert all(row["category"] == "high" for row in result)
 
     def test_boundary_values(self, spark: SparkSession) -> None:
@@ -73,7 +87,9 @@ class TestScoreCategorization:
             schema="PV1MATH DOUBLE, expected STRING",
         )
         result = (
-            df.withColumn("category", categorize_score()).select("category", "expected").collect()
+            df.withColumn("category", categorize_score())
+            .select("category", "expected")
+            .collect()
         )
         for row in result:
             assert row["category"] == row["expected"]
@@ -95,9 +111,11 @@ class TestClusterLabeling:
         cluster_dict = {row["score_cluster"]: row["count"] for row in cluster_counts}
 
         # Expected: 2 low, 3 middle, 3 high
-        assert cluster_dict.get("low", 0) == 2
-        assert cluster_dict.get("middle", 0) == 3
-        assert cluster_dict.get("high", 0) == 3
+        assert cluster_dict.get("low", 0) == 2, f"Expected low=2, got {cluster_dict}"
+        assert (
+            cluster_dict.get("middle", 0) == 3
+        ), f"Expected middle=3, got {cluster_dict}"
+        assert cluster_dict.get("high", 0) == 3, f"Expected high=3, got {cluster_dict}"
 
     def test_custom_cluster_column_name(self, sample_student_data: DataFrame) -> None:
         """Test using a custom cluster column name."""
@@ -105,7 +123,9 @@ class TestClusterLabeling:
         assert "custom_level" in result.columns
         assert result.count() == 8
 
-    def test_missing_score_column_raises_error(self, sample_student_data: DataFrame) -> None:
+    def test_missing_score_column_raises_error(
+        self, sample_student_data: DataFrame
+    ) -> None:
         """Test that missing score column raises ValueError."""
         with pytest.raises(ValueError, match="not found"):
             add_cluster_labels(sample_student_data, score_column="INVALID_COLUMN")
@@ -174,7 +194,9 @@ class TestClusterStatistics:
                 assert 0 <= level_stats["mean_score"] <= 1000
                 assert 0 <= level_stats["weighted_mean_score"] <= 1000
 
-    def test_missing_weight_column_raises_error(self, sample_student_data: DataFrame) -> None:
+    def test_missing_weight_column_raises_error(
+        self, sample_student_data: DataFrame
+    ) -> None:
         """Test that missing weight column raises ValueError."""
         clustered_df = add_cluster_labels(sample_student_data)
         with pytest.raises(ValueError, match="not found"):
@@ -210,7 +232,9 @@ class TestIntegration:
         # Verify results
         assert len(stats) == 3
         assert all(isinstance(s["sample_count"], int) for s in stats.values())
-        assert all(isinstance(s["population_percentage"], float) for s in stats.values())
+        assert all(
+            isinstance(s["population_percentage"], float) for s in stats.values()
+        )
 
     def test_data_consistency(self, sample_student_data: DataFrame) -> None:
         """Test that clustering doesn't lose or duplicate data."""
