@@ -41,8 +41,11 @@ docker-compose logs jupyter
 # 打開 conda 環境
 conda activate python310
 
-# 執行應用查看分析結果
+# 執行應用查看分數分群分析結果
 python -m behavior_analysis
+
+# 執行應用查看態度分群分析結果
+python -m behavior_analysis attitude
 ```
 
 ## Development Setup
