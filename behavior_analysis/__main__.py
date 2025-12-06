@@ -171,12 +171,22 @@ def main(target_column: str | None = None) -> None:
 
 if __name__ == "__main__":
     # Support command-line arguments
-    if len(sys.argv) > 1 and sys.argv[1] == "attitude":
-        # Run attitude clustering test
-        from .attitude_test import test_attitude_clustering
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "attitude":
+            # Run attitude clustering test
+            from .attitude_test import test_attitude_clustering
 
-        test_attitude_clustering()
+            test_attitude_clustering()
+        elif sys.argv[1] == "score_attitude_cross_analysis":
+            # Run score-attitude cross-dimensional analysis
+            from .score_attitude_cross_analysis_test import (
+                test_score_attitude_cross_analysis,
+            )
+
+            test_score_attitude_cross_analysis()
+        else:
+            # Run default score clustering with optional column
+            main(target_column=sys.argv[1])
     else:
         # Run default score clustering
-        column = sys.argv[1] if len(sys.argv) > 1 else None
-        main(target_column=column)
+        main()
