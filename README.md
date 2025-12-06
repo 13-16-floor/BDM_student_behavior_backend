@@ -2,6 +2,73 @@
 
 ## Setup Instructions
 
+### 環境適應指南
+
+本專案支援多種開發環境。根據你的工作環境選擇相應的設置方式：
+
+#### **1. 本地開發（不使用容器）**
+
+如果你想在本地機器上直接開發：
+
+```bash
+# 安裝 Python 3.10+
+# macOS 用戶可使用 Homebrew
+brew install python@3.10
+
+# 安裝 uv 套件管理工具
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# 同步依賴
+uv sync --all-groups
+
+# 啟用開發環境
+source .venv/bin/activate  # Linux/macOS
+# 或
+.venv\Scripts\activate  # Windows
+
+# 執行應用
+python -m behavior_analysis
+```
+
+#### **2. Docker 容器開發（推薦）**
+
+如果你使用 Docker，有兩種方式工作：
+
+**方式 A：在容器中直接執行（簡單）**
+
+```bash
+# 啟動 Docker 容器
+docker compose up -d
+
+# 查看 Jupyter 連結
+docker compose logs jupyter
+```
+
+**方式 B：VS Code Remote Container（推薦開發方式）**
+
+這是最推薦的開發方式，可以在 VS Code 中直接編輯容器內的代碼：
+
+1. 安裝 VS Code Remote Container 擴展
+2. 點擊 VS Code 左下角的綠色遠端圖示 `><`
+3. 選擇「Attach to Running Container」
+4. 選擇 `bdm_student_behavior_backend_jupyter_1` 容器
+5. 在遠端連接中開啟 `/workspace` 資料夾
+
+進入容器後，你可以在 VS Code 終端中直接執行所有命令，就像在本地開發一樣：
+
+```bash
+# 打開 conda 環境
+conda activate python310
+
+# 執行應用
+python -m behavior_analysis
+
+# 執行測試
+python -m pytest tests/ -v
+```
+
+> **提示**：此方式下無需在命令前加 `docker compose exec`
+
 ### Docker Setup
 
 啟動 Docker 容器服務：
@@ -46,6 +113,9 @@ python -m behavior_analysis
 
 # 執行應用查看態度分群分析結果
 python -m behavior_analysis attitude
+
+# 執行應用查看分數-態度跨維度分析結果
+python -m behavior_analysis score_attitude_cross_analysis
 ```
 
 ## Development Setup
@@ -101,6 +171,26 @@ Mypy 用於靜態型別檢查。
 ```bash
 # 執行型別檢查
 uv run mypy behavior_analysis
+```
+
+### Testing
+
+本專案使用 pytest 進行單元測試。在 VS Code Remote Container 中執行：
+
+```bash
+# 執行所有測試
+python -m pytest tests/ -v
+
+# 執行特定測試模組
+python -m pytest tests/test_score_clustering.py -v          # 分數分群測試
+python -m pytest tests/test_attitude_clustering.py -v       # 態度分群測試
+python -m pytest tests/test_score_attitude_cross_analysis.py -v  # 跨維度分析測試
+
+# 執行特定測試類別
+python -m pytest tests/test_attitude_clustering.py::TestAttitudeClustering -v
+
+# 顯示覆蓋率報告
+python -m pytest tests/ --cov=behavior_analysis --cov-report=term-missing -v
 ```
 
 ### CI/CD
