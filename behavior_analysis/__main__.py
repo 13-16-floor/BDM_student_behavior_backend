@@ -112,9 +112,7 @@ def main(target_column: str | None = None) -> None:
 
         # Verify required columns exist
         required_columns = ["PV1MATH", "W_FSTUWT"]
-        missing_columns = [
-            col for col in required_columns if col not in student_df.columns
-        ]
+        missing_columns = [col for col in required_columns if col not in student_df.columns]
         if missing_columns:
             raise ValueError(f"Missing required columns: {missing_columns}")
 
@@ -148,9 +146,7 @@ def main(target_column: str | None = None) -> None:
             if stats["mean_score"] is not None:
                 logger.info(f"  Mean Score: {stats['mean_score']:.2f}")
             if stats["weighted_mean_score"] is not None:
-                logger.info(
-                    f"  Weighted Mean Score: {stats['weighted_mean_score']:.2f}"
-                )
+                logger.info(f"  Weighted Mean Score: {stats['weighted_mean_score']:.2f}")
 
         # Generate visualizations
         logger.info("\nGenerating visualizations...")
