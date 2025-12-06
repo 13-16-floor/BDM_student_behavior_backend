@@ -7,7 +7,6 @@ using cross-tabulation, chi-square tests, and multiple visualization techniques.
 
 from typing import Any
 
-import numpy as np
 import pandas as pd
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as f
@@ -122,9 +121,7 @@ def perform_chi_square_test(
         "is_significant": is_significant,
         "expected_frequencies": expected,
         "interpretation": (
-            "Significant association found"
-            if is_significant
-            else "No significant association"
+            "Significant association found" if is_significant else "No significant association"
         ),
     }
 

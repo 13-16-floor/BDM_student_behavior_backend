@@ -15,12 +15,9 @@ from all four dimensions.
 
 from typing import Any
 
-import numpy as np
-import pandas as pd
-from pyspark.ml import Pipeline
 from pyspark.ml.clustering import KMeans
 from pyspark.ml.feature import StandardScaler, VectorAssembler
-from pyspark.sql import Column, DataFrame
+from pyspark.sql import DataFrame
 from pyspark.sql import functions as f
 
 from ..utils.logger import get_logger
@@ -161,15 +158,13 @@ def perform_attitude_clustering(df: DataFrame, num_clusters: int = 3) -> DataFra
     model = kmeans.fit(df)
     df_clustered = model.transform(df)
 
-    logger.info(f"K-means clustering completed")
+    logger.info("K-means clustering completed")
     logger.info(f"Cluster centers: {model.clusterCenters()}")
 
     return df_clustered
 
 
-def add_attitude_labels(
-    df: DataFrame, cluster_column: str = "attitude_cluster"
-) -> DataFrame:
+def add_attitude_labels(df: DataFrame, cluster_column: str = "attitude_cluster") -> DataFrame:
     """
     Map cluster IDs to human-readable attitude labels.
 
@@ -233,9 +228,7 @@ def get_attitude_statistics(
     )
 
     # Calculate total weighted count
-    total_weighted = df.select(f.sum(f.col(weight_column)).alias("total")).collect()[0][
-        "total"
-    ]
+    total_weighted = df.select(f.sum(f.col(weight_column)).alias("total")).collect()[0]["total"]
 
     # Format results
     result = {}
@@ -278,9 +271,7 @@ def print_attitude_report(statistics: dict[str, Any], verbose: bool = True) -> N
         stats = statistics[label]
         print(f"\n{label}", flush=True)
         print("-" * 80, flush=True)
-        print(
-            f"  Sample Size:           {stats['sample_count']:,} students", flush=True
-        )
+        print(f"  Sample Size:           {stats['sample_count']:,} students", flush=True)
         print(
             f"  Weighted Population:   {stats['weighted_count']:,.0f} students",
             flush=True,
