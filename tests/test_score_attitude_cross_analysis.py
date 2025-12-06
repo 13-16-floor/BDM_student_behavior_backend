@@ -163,7 +163,7 @@ class TestCrossAnalysisResults:
         )
 
         results_independent = perform_chi_square_test(cross_tab_independent)
-        assert results_independent["is_significant"] == False
+        assert not results_independent["is_significant"]
 
         # High chi-square (significant)
         cross_tab_associated = pd.DataFrame(
@@ -176,4 +176,4 @@ class TestCrossAnalysisResults:
         )
 
         results_associated = perform_chi_square_test(cross_tab_associated)
-        assert results_associated["is_significant"] == True
+        assert results_associated["is_significant"]

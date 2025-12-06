@@ -108,7 +108,7 @@ class TestAttitudeFeatures:
     def test_features_dimension_count(self, sample_attitude_data: DataFrame) -> None:
         """Test that features have correct number of dimensions."""
         prepared_df = prepare_attitude_data(sample_attitude_data)
-        featured_df = create_attitude_features(prepared_df)
+        create_attitude_features(prepared_df)
 
         # Should have 4 attitude dimensions
         assert len(ATTITUDE_DIMENSIONS) == 4
