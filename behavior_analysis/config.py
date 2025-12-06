@@ -126,6 +126,19 @@ class AppConfig:
             raise ValueError(f"Unknown dataset: {dataset_name}")
         return str(Path(self.data.PARQUET_DIR) / f"{dataset_name}.parquet")
 
+    def get_artifact_path(self, artifact_type: str = "logs") -> str:
+        """
+        Get full path to artifacts directory (logs, visualizations, etc.).
+
+        Args:
+            artifact_type: Type of artifact (logs, visualizations, etc.)
+
+        Returns:
+            Full path to the artifact directory
+        """
+        artifact_dir = Path(self.data.LOG_DIR).parent / artifact_type
+        return str(artifact_dir)
+
 
 # Global configuration instance cache
 class _ConfigCache:  # noqa: N801

@@ -20,6 +20,7 @@ from .data.converter import SPSSToParquetConverter
 from .data.spark_manager import SparkSessionManager
 from .utils.file_utils import ensure_directory_exists
 from .utils.logger import setup_logger
+from .visualization.score_clustering_viz import create_all_visualizations
 
 
 def main(target_column: str | None = None) -> None:
@@ -150,6 +151,12 @@ def main(target_column: str | None = None) -> None:
                 logger.info(
                     f"  Weighted Mean Score: {stats['weighted_mean_score']:.2f}"
                 )
+
+        # Generate visualizations
+        logger.info("\nGenerating visualizations...")
+        viz_paths = create_all_visualizations(
+            cluster_stats, output_directory=config.get_artifact_path("visualizations")
+        )
 
     except KeyboardInterrupt:
         logger.info("\nApplication interrupted by user")
