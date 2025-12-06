@@ -10,7 +10,6 @@ Tests the attitude-based clustering functionality including:
 """
 
 import pytest
-from pyspark.ml.feature import StandardScaler, VectorAssembler
 from pyspark.sql import DataFrame, SparkSession
 
 from behavior_analysis.analysis.attitude_clustering import (
@@ -49,7 +48,7 @@ def sample_attitude_data(spark: SparkSession) -> DataFrame:
     ]
     return spark.createDataFrame(
         data,
-        schema="""student_id STRING, 
+        schema="""student_id STRING,
                   ST296Q01JA DOUBLE,
                   ST062Q01TA DOUBLE,
                   MATHMOT DOUBLE,
@@ -78,7 +77,7 @@ class TestAttitudePrepare:
         ]
         df = spark.createDataFrame(
             data,
-            schema="""student_id STRING, 
+            schema="""student_id STRING,
                       ST296Q01JA DOUBLE,
                       ST062Q01TA DOUBLE,
                       MATHMOT DOUBLE,

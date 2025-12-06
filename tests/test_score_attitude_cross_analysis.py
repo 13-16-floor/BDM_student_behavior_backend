@@ -11,11 +11,7 @@ import pytest
 from scipy.stats import chi2_contingency
 
 from behavior_analysis.analysis.score_attitude_cross_analysis import (
-    create_cross_tabulation,
-    export_cross_tabulation,
     perform_chi_square_test,
-    print_chi_square_report,
-    print_cross_tabulation,
 )
 
 
