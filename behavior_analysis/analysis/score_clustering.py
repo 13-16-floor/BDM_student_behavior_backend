@@ -1,8 +1,8 @@
 """
-Score-based clustering module.
+Score-based clustering analysis module.
 
-Implements clustering analysis based on PISA math scores (PV1MATH).
-Students are grouped into three levels:
+Implements score-based clustering analysis for PISA student math performance.
+Students are grouped into three levels based on PV1MATH scores:
 - Low: < 482
 - Middle: 482-606
 - High: ≥ 607
@@ -20,9 +20,9 @@ from ..utils.logger import get_logger
 
 # PISA Math Score Thresholds (Official Levels)
 SCORE_THRESHOLDS = {
-    "low": (0, 482),           # < 482
-    "middle": (482, 607),      # 482-606
-    "high": (607, float('inf'))  # ≥ 607
+    "low": (0, 482),  # < 482
+    "middle": (482, 607),  # 482-606
+    "high": (607, float("inf")),  # ≥ 607
 }
 
 
@@ -36,17 +36,15 @@ def categorize_score(score_column: str = "PV1MATH") -> f.Column:
     Returns:
         Spark Column expression for score categorization
     """
-    return f.when(
-        f.col(score_column) < 482, "low"
-    ).when(
-        (f.col(score_column) >= 482) & (f.col(score_column) < 607), "middle"
-    ).otherwise("high")
+    return (
+        f.when(f.col(score_column) < 482, "low")
+        .when((f.col(score_column) >= 482) & (f.col(score_column) < 607), "middle")
+        .otherwise("high")
+    )
 
 
 def add_cluster_labels(
-    df: DataFrame,
-    score_column: str = "PV1MATH",
-    cluster_column: str = "score_cluster"
+    df: DataFrame, score_column: str = "PV1MATH", cluster_column: str = "score_cluster"
 ) -> DataFrame:
     """
     Add cluster labels to the DataFrame based on score thresholds.
@@ -70,17 +68,14 @@ def add_cluster_labels(
     logger.info("  Middle: 482-606")
     logger.info("  High: ≥ 607")
 
-    return df.withColumn(
-        cluster_column,
-        categorize_score(score_column)
-    )
+    return df.withColumn(cluster_column, categorize_score(score_column))
 
 
 def get_cluster_statistics(
     df: DataFrame,
     score_column: str = "PV1MATH",
     weight_column: str = "W_FSTUWT",
-    cluster_column: str = "score_cluster"
+    cluster_column: str = "score_cluster",
 ) -> dict[str, Any]:
     """
     Calculate weighted statistics for each score cluster.
@@ -114,20 +109,26 @@ def get_cluster_statistics(
     logger.info("  Weight column: %s", weight_column)
 
     # Calculate cluster statistics
-    cluster_stats = df.groupBy(cluster_column).agg(
-        f.count(f.col(score_column)).alias("count"),
-        f.sum(f.col(weight_column)).alias("weighted_count"),
-        f.mean(f.col(score_column)).alias("mean_score"),
-        (f.sum(f.col(score_column) * f.col(weight_column)) / 
-         f.sum(f.col(weight_column))).alias("weighted_mean_score"),
-        f.min(f.col(score_column)).alias("min_score"),
-        f.max(f.col(score_column)).alias("max_score"),
-    ).collect()
+    cluster_stats = (
+        df.groupBy(cluster_column)
+        .agg(
+            f.count(f.col(score_column)).alias("count"),
+            f.sum(f.col(weight_column)).alias("weighted_count"),
+            f.mean(f.col(score_column)).alias("mean_score"),
+            (
+                f.sum(f.col(score_column) * f.col(weight_column))
+                / f.sum(f.col(weight_column))
+            ).alias("weighted_mean_score"),
+            f.min(f.col(score_column)).alias("min_score"),
+            f.max(f.col(score_column)).alias("max_score"),
+        )
+        .collect()
+    )
 
     # Calculate total weighted count for percentage calculation
-    total_weighted = df.select(
-        f.sum(f.col(weight_column)).alias("total")
-    ).collect()[0]["total"]
+    total_weighted = df.select(f.sum(f.col(weight_column)).alias("total")).collect()[0][
+        "total"
+    ]
 
     # Format results
     result = {}
@@ -138,11 +139,23 @@ def get_cluster_statistics(
         result[cluster_level] = {
             "sample_count": row["count"],
             "weighted_count": float(weighted_count) if weighted_count else 0,
-            "mean_score": float(row["mean_score"]) if row["mean_score"] is not None else None,
-            "weighted_mean_score": float(row["weighted_mean_score"]) if row["weighted_mean_score"] is not None else None,
-            "min_score": float(row["min_score"]) if row["min_score"] is not None else None,
-            "max_score": float(row["max_score"]) if row["max_score"] is not None else None,
-            "population_percentage": (float(weighted_count) / total_weighted * 100) if total_weighted else 0,
+            "mean_score": (
+                float(row["mean_score"]) if row["mean_score"] is not None else None
+            ),
+            "weighted_mean_score": (
+                float(row["weighted_mean_score"])
+                if row["weighted_mean_score"] is not None
+                else None
+            ),
+            "min_score": (
+                float(row["min_score"]) if row["min_score"] is not None else None
+            ),
+            "max_score": (
+                float(row["max_score"]) if row["max_score"] is not None else None
+            ),
+            "population_percentage": (
+                (float(weighted_count) / total_weighted * 100) if total_weighted else 0
+            ),
         }
 
     logger.info("Cluster statistics computed successfully")
@@ -166,7 +179,7 @@ def print_clustering_report(statistics: dict[str, Any], verbose: bool = True) ->
     cluster_names = {
         "low": "Low (< 482)",
         "middle": "Middle (482-606)",
-        "high": "High (≥ 607)"
+        "high": "High (≥ 607)",
     }
 
     for level in cluster_order:
@@ -176,16 +189,36 @@ def print_clustering_report(statistics: dict[str, Any], verbose: bool = True) ->
         stats = statistics[level]
         print(f"\n{cluster_names[level]}", flush=True)
         print("-" * 80, flush=True)
-        print(f"  Sample Size:           {stats['sample_count']:,} students", flush=True)
-        print(f"  Weighted Population:   {stats['weighted_count']:,.0f} students", flush=True)
-        print(f"  Population Share:      {stats['population_percentage']:.2f}%", flush=True)
+        print(
+            f"  Sample Size:           {stats['sample_count']:,} students", flush=True
+        )
+        print(
+            f"  Weighted Population:   {stats['weighted_count']:,.0f} students",
+            flush=True,
+        )
+        print(
+            f"  Population Share:      {stats['population_percentage']:.2f}%",
+            flush=True,
+        )
 
         if verbose:
-            mean_msg = f"  Mean Score (sample):   {stats['mean_score']:.2f}" if stats['mean_score'] is not None else "  Mean Score (sample):   N/A"
+            mean_msg = (
+                f"  Mean Score (sample):   {stats['mean_score']:.2f}"
+                if stats["mean_score"] is not None
+                else "  Mean Score (sample):   N/A"
+            )
             print(mean_msg, flush=True)
-            weighted_msg = f"  Mean Score (weighted): {stats['weighted_mean_score']:.2f}" if stats['weighted_mean_score'] is not None else "  Mean Score (weighted): N/A"
+            weighted_msg = (
+                f"  Mean Score (weighted): {stats['weighted_mean_score']:.2f}"
+                if stats["weighted_mean_score"] is not None
+                else "  Mean Score (weighted): N/A"
+            )
             print(weighted_msg, flush=True)
-            range_msg = f"  Score Range:           {stats['min_score']:.0f} - {stats['max_score']:.0f}" if stats['min_score'] is not None else "  Score Range:           N/A"
+            range_msg = (
+                f"  Score Range:           {stats['min_score']:.0f} - {stats['max_score']:.0f}"
+                if stats["min_score"] is not None
+                else "  Score Range:           N/A"
+            )
             print(range_msg, flush=True)
 
     print("\n" + "=" * 80, flush=True)

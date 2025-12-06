@@ -10,7 +10,7 @@ This module orchestrates the complete workflow:
 import sys
 import warnings
 
-from .analysis.clustering import (
+from .analysis.score_clustering import (
     add_cluster_labels,
     get_cluster_statistics,
     print_clustering_report,
@@ -111,7 +111,9 @@ def main(target_column: str | None = None) -> None:
 
         # Verify required columns exist
         required_columns = ["PV1MATH", "W_FSTUWT"]
-        missing_columns = [col for col in required_columns if col not in student_df.columns]
+        missing_columns = [
+            col for col in required_columns if col not in student_df.columns
+        ]
         if missing_columns:
             raise ValueError(f"Missing required columns: {missing_columns}")
 
@@ -120,9 +122,7 @@ def main(target_column: str | None = None) -> None:
         # Add cluster labels based on PV1MATH scores
         logger.info("\nPerforming score-based clustering...")
         clustered_df = add_cluster_labels(
-            student_df,
-            score_column="PV1MATH",
-            cluster_column="score_cluster"
+            student_df, score_column="PV1MATH", cluster_column="score_cluster"
         )
 
         # Get cluster statistics
@@ -131,7 +131,7 @@ def main(target_column: str | None = None) -> None:
             clustered_df,
             score_column="PV1MATH",
             weight_column="W_FSTUWT",
-            cluster_column="score_cluster"
+            cluster_column="score_cluster",
         )
 
         # Print clustering report
@@ -144,10 +144,12 @@ def main(target_column: str | None = None) -> None:
             logger.info(f"  Sample Size: {stats['sample_count']:,}")
             logger.info(f"  Weighted Population: {stats['weighted_count']:,.0f}")
             logger.info(f"  Population %: {stats['population_percentage']:.2f}%")
-            if stats['mean_score'] is not None:
+            if stats["mean_score"] is not None:
                 logger.info(f"  Mean Score: {stats['mean_score']:.2f}")
-            if stats['weighted_mean_score'] is not None:
-                logger.info(f"  Weighted Mean Score: {stats['weighted_mean_score']:.2f}")
+            if stats["weighted_mean_score"] is not None:
+                logger.info(
+                    f"  Weighted Mean Score: {stats['weighted_mean_score']:.2f}"
+                )
 
     except KeyboardInterrupt:
         logger.info("\nApplication interrupted by user")
