@@ -2,11 +2,53 @@
 
 ## Setup Instructions
 
-執行 `docker-compose up -d --build` 啟動服務，服務啟動後，使用 `docker-compose logs jupyter` 查看 JupyterLab logs，找到登入連結。
+### Docker Setup
 
-### vscode remote container
+啟動 Docker 容器服務：
 
-為方便開發，也可以使用 vscode remote container 功能，點擊畫面左下角的綠色圖示，選擇 「attach to running container」，選擇 `bdm_student_behavior_backend_jupyter_1` 即可進入容器開發環境。
+```bash
+# 使用現代 Docker Compose 語法（推薦）
+docker compose up -d --build
+
+# 或使用傳統 docker-compose 語法
+docker-compose up -d --build
+```
+
+> **注意**: `docker compose`（無連字號）是現代 Docker CLI 的一部分，而 `docker-compose`（有連字號）是舊版獨立工具。兩者功能相同，使用其中任一即可。
+
+服務啟動後，查看 JupyterLab logs 找到登入連結：
+
+```bash
+# 使用現代語法
+docker compose logs jupyter
+
+# 或使用傳統語法
+docker-compose logs jupyter
+```
+
+### VS Code Remote Container Development
+
+為方便開發，建議使用 VS Code Remote Container 功能：
+
+1. 點擊 VS Code 左下角的綠色圖示
+2. 選擇「Attach to Running Container」
+3. 選擇 `bdm_student_behavior_backend_jupyter_1` 容器
+4. 在遠端連接中，開啟 `/workspace` 目錄
+
+進入容器後，執行以下命令執行應用：
+
+```bash
+# 打開 conda 環境
+conda activate python310
+
+# 執行應用查看分析結果
+python -m behavior_analysis
+
+# 執行測試
+python -m pytest tests/ -v
+```
+
+> **提示**：此方式下無需在命令前加 `docker compose exec`
 
 ## Development Setup
 
@@ -61,6 +103,21 @@ Mypy 用於靜態型別檢查。
 ```bash
 # 執行型別檢查
 uv run mypy behavior_analysis
+```
+
+### Testing
+
+本專案使用 pytest 進行單元測試。在 VS Code Remote Container 中執行：
+
+```bash
+# 執行所有測試
+python -m pytest tests/ -v
+
+# 執行特定測試模組
+python -m pytest tests/test_score_clustering.py -v
+
+# 顯示覆蓋率報告
+python -m pytest tests/ --cov=behavior_analysis --cov-report=term-missing -v
 ```
 
 ### CI/CD

@@ -7,18 +7,80 @@ This module orchestrates the complete workflow:
 3. Perform statistical analysis
 """
 
+import logging
 import sys
+import warnings
 
-from .analysis.basic_stats import (
-    calculate_column_mean,
-    get_column_statistics,
-    print_statistics_report,
+from pyspark.sql import DataFrame
+
+from .analysis.score_clustering import (
+    add_cluster_labels,
+    get_cluster_statistics,
+    print_clustering_report,
 )
-from .config import load_config
+from .config import AppConfig, load_config
 from .data.converter import SPSSToParquetConverter
 from .data.spark_manager import SparkSessionManager
 from .utils.file_utils import ensure_directory_exists
 from .utils.logger import setup_logger
+from .visualization.score_clustering_viz import create_all_visualizations
+
+
+def perform_score_clustering_analysis(
+    student_df: DataFrame, config: AppConfig, logger: logging.Logger
+) -> None:
+    """
+    Perform score-based clustering analysis on student data using math scores.
+
+    This function performs a complete score-based clustering workflow:
+    1. Adds cluster labels to students based on their PV1MATH scores
+       (dividing them into low/medium/high performance groups)
+    2. Computes weighted cluster statistics using PISA sample weights (W_FSTUWT)
+    3. Prints a detailed clustering report to console
+    4. Logs comprehensive statistics for each cluster
+    5. Generates and saves visualizations to the artifacts directory
+
+    Args:
+        student_df: Spark DataFrame containing student data with PV1MATH
+                   and W_FSTUWT columns
+        config: Application configuration containing paths and settings
+        logger: Logger instance for recording analysis steps and results
+    """
+    # Add cluster labels based on PV1MATH scores
+    logger.info("\nPerforming score-based clustering...")
+    clustered_df = add_cluster_labels(
+        student_df, score_column="PV1MATH", cluster_column="score_cluster"
+    )
+
+    # Get cluster statistics
+    logger.info("Computing cluster statistics with weights...")
+    cluster_stats = get_cluster_statistics(
+        clustered_df,
+        score_column="PV1MATH",
+        weight_column="W_FSTUWT",
+        cluster_column="score_cluster",
+    )
+
+    # Print clustering report
+    print_clustering_report(cluster_stats, verbose=True)
+
+    # Log statistics
+    logger.info("\nCluster Statistics Summary:")
+    for level, stats in sorted(cluster_stats.items()):
+        logger.info(f"\n{level.upper()}:")
+        logger.info(f"  Sample Size: {stats['sample_count']:,}")
+        logger.info(f"  Weighted Population: {stats['weighted_count']:,.0f}")
+        logger.info(f"  Population %: {stats['population_percentage']:.2f}%")
+        if stats["mean_score"] is not None:
+            logger.info(f"  Mean Score: {stats['mean_score']:.2f}")
+        if stats["weighted_mean_score"] is not None:
+            logger.info(f"  Weighted Mean Score: {stats['weighted_mean_score']:.2f}")
+
+    # Generate visualizations
+    logger.info("\nGenerating visualizations...")
+    create_all_visualizations(
+        cluster_stats, output_directory=config.get_artifact_path("visualizations")
+    )
 
 
 def main(target_column: str | None = None) -> None:
@@ -39,9 +101,12 @@ def main(target_column: str | None = None) -> None:
     if target_column is None:
         target_column = "ST059Q01TA"
 
+    # Suppress Java/Spark warnings for cleaner output
+    warnings.filterwarnings("ignore")
+
     print("\n" + "=" * 70)
     print("PISA Behavior Analysis Application")
-    print("=" * 70 + "\n")
+    print("=" * 70 + "\n", flush=True)
 
     # 1. Initialize configuration and logging
     config = load_config()
@@ -74,101 +139,59 @@ def main(target_column: str | None = None) -> None:
             # Check if already converted
             if converter.is_converted(parquet_path, spss_path):
                 logger.info("  Status: Already converted, skipping...")
-                print(f"✓ {dataset_name}: Already converted")
+                print(f"✓ {dataset_name}: Already converted", flush=True)
             else:
                 logger.info("  Status: Converting...")
-                print(f"⟳ {dataset_name}: Converting...")
+                print(f"⟳ {dataset_name}: Converting...", flush=True)
 
                 success = converter.convert_file(spss_path, parquet_path)
 
                 if success:
                     logger.info("  Result: Conversion successful")
-                    print(f"✓ {dataset_name}: Conversion completed")
+                    print(f"✓ {dataset_name}: Conversion completed", flush=True)
                 else:
                     logger.error("  Result: Conversion failed")
-                    print(f"✗ {dataset_name}: Conversion failed")
+                    print(f"✗ {dataset_name}: Conversion failed", flush=True)
 
         # 4. Spark Analysis Phase
         logger.info("\n" + "-" * 70)
-        logger.info("PHASE 2: Spark Data Analysis")
+        logger.info("PHASE 2: Score-based Clustering Analysis")
         logger.info("-" * 70)
 
-        print("\nStarting Spark analysis...")
-
+        # Initialize Spark session with context manager for automatic cleanup
         with SparkSessionManager(config.spark) as spark:
+            logger.info("Spark session initialized")
+
             # Load student data
             student_parquet_path = config.get_parquet_path("student")
             logger.info(f"\nLoading student data from: {student_parquet_path}")
 
             student_df = spark.read.parquet(student_parquet_path)
-            row_count = student_df.count()
+            logger.info(f"Student data loaded: {student_df.count():,} records")
 
-            logger.info(
-                f"Student data loaded: {row_count:,} rows, {len(student_df.columns)} columns"
-            )
-            print(f"\n✓ Loaded student data: {row_count:,} rows")
+            # Verify required columns exist
+            required_columns = ["PV1MATH", "W_FSTUWT"]
+            missing_columns = [col for col in required_columns if col not in student_df.columns]
+            if missing_columns:
+                raise ValueError(f"Missing required columns: {missing_columns}")
 
-            # Check if target column exists
-            if target_column not in student_df.columns:
-                # Try to find similar columns
-                similar_cols = [col for col in student_df.columns if target_column[:6] in col]
+            logger.info(f"Required columns verified: {required_columns}")
 
-                logger.error(f"Column '{target_column}' not found in dataset")
-
-                if similar_cols:
-                    logger.info(f"Similar columns found: {similar_cols[:5]}")
-                    print(f"\n✗ Column '{target_column}' not found!")
-                    print(f"  Similar columns: {', '.join(similar_cols[:5])}")
-                else:
-                    print(f"\n✗ Column '{target_column}' not found and no similar columns detected")
-
-                return
-
-            # Calculate mean
-            logger.info(f"\nCalculating mean for column: {target_column}")
-            print(f"\nAnalyzing column: {target_column}")
-
-            mean_value = calculate_column_mean(student_df, target_column)
-
-            if mean_value is not None:
-                # Get detailed statistics
-                stats = get_column_statistics(student_df, target_column)
-
-                # Print results
-                print_statistics_report(stats)
-
-                # Log summary
-                logger.info("\nAnalysis completed successfully:")
-                logger.info(f"  Column: {target_column}")
-                logger.info(f"  Mean: {mean_value:.4f}")
-                logger.info(f"  Non-null count: {stats['count']:,}")
-                logger.info(f"  Null count: {stats['null_count']:,}")
-            else:
-                logger.warning(f"No valid values found for column: {target_column}")
-                print(f"\n⚠ No valid values found for column: {target_column}")
-
-        logger.info("\n" + "=" * 70)
-        logger.info("Application completed successfully")
-        logger.info("=" * 70)
-
-        print("\n" + "=" * 70)
-        print("✓ Analysis completed successfully!")
-        print("=" * 70 + "\n")
+            # Perform score-based clustering analysis
+            perform_score_clustering_analysis(student_df, config, logger)
 
     except KeyboardInterrupt:
         logger.info("\nApplication interrupted by user")
         print("\n\n⚠ Application interrupted by user")
         sys.exit(1)
 
-    except Exception as e:
-        logger.error(f"\nApplication failed with error: {e}", exc_info=True)
-        print(f"\n✗ Error: {e}")
+    except Exception as e:  # noqa: BLE001
+        logger.error("Application failed with error: %s", e, exc_info=True)
+        print(f"\n✗ Error: {e}", flush=True)
         sys.exit(1)
 
 
 if __name__ == "__main__":
     # Support command-line argument for column name
-    import sys
-
     column = sys.argv[1] if len(sys.argv) > 1 else None
     main(target_column=column)
