@@ -140,23 +140,16 @@ class AppConfig:
         return str(artifact_dir)
 
 
-# Global configuration instance cache
-class _ConfigCache:  # noqa: N801
-    """Cache for application configuration."""
-
-    _instance: AppConfig | None = None
-
-    @classmethod
-    def get(cls) -> AppConfig:
-        """Get or create the global configuration instance."""
-        if cls._instance is None:
-            cls._instance = AppConfig()
-        return cls._instance
+# Global configuration instance (singleton pattern)
+_config_instance: AppConfig | None = None
 
 
 def get_config() -> AppConfig:
     """Get the global configuration instance (singleton pattern)."""
-    return _ConfigCache.get()
+    global _config_instance
+    if _config_instance is None:
+        _config_instance = AppConfig()
+    return _config_instance
 
 
 def load_config() -> AppConfig:
