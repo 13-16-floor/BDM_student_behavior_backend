@@ -43,7 +43,12 @@ conda activate python310
 
 # 執行應用查看分析結果
 python -m behavior_analysis
+
+# 執行測試
+python -m pytest tests/ -v
 ```
+
+> **提示**：此方式下無需在命令前加 `docker compose exec`
 
 ## Development Setup
 
@@ -98,6 +103,21 @@ Mypy 用於靜態型別檢查。
 ```bash
 # 執行型別檢查
 uv run mypy behavior_analysis
+```
+
+### Testing
+
+本專案使用 pytest 進行單元測試。在 VS Code Remote Container 中執行：
+
+```bash
+# 執行所有測試
+python -m pytest tests/ -v
+
+# 執行特定測試模組
+python -m pytest tests/test_score_clustering.py -v
+
+# 顯示覆蓋率報告
+python -m pytest tests/ --cov=behavior_analysis --cov-report=term-missing -v
 ```
 
 ### CI/CD
