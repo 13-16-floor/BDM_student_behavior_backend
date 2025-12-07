@@ -481,7 +481,7 @@ def create_sample_loss_chart(
     colors1 = ["#95E1D3", "#FF6B6B"]
     bars1 = ax1.bar(categories, sample_values, color=colors1, edgecolor="black", linewidth=1.5)
 
-    for bar, val in zip(bars1, sample_values):
+    for bar, val in zip(bars1, sample_values, strict=True):
         height = bar.get_height()
         percentage = val / sample_loss["original_count"] * 100
         ax1.text(
@@ -507,7 +507,7 @@ def create_sample_loss_chart(
     colors2 = ["#95E1D3", "#FF6B6B"]
     bars2 = ax2.bar(categories, weighted_values, color=colors2, edgecolor="black", linewidth=1.5)
 
-    for bar, val in zip(bars2, weighted_values):
+    for bar, val in zip(bars2, weighted_values, strict=True):
         height = bar.get_height()
         percentage = val / weighted_loss["original_weighted"] * 100
         ax2.text(

@@ -245,7 +245,7 @@ def perform_attitude_clustering(
     return df_clustered, label_mapping
 
 
-def _assign_cluster_labels(cluster_centers: list) -> dict[int, str]:
+def _assign_cluster_labels(cluster_centers: list[list[float]]) -> dict[int, str]:
     """
     Automatically assign attitude labels based on cluster center characteristics.
 
