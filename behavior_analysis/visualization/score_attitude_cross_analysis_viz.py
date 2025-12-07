@@ -68,7 +68,14 @@ def create_grouped_bar_chart(
     # Prepare data for grouped bars
     x = np.arange(len(cross_tab.index))
     width = 0.25
-    colors = ["#4ECDC4", "#95E1D3", "#FDB750"]
+
+    # Assign colors based on cluster semantic meaning
+    color_map = {
+        "Proactive Learners": "#95E1D3",  # Green - Positive
+        "Average Learners": "#FDB750",  # Yellow - Neutral
+        "Disengaged Learners": "#FF6B6B",  # Red - Concerning
+    }
+    colors = [color_map[col] for col in cross_tab.columns]
 
     for i, col in enumerate(cross_tab.columns):
         offset = (i - 1) * width
@@ -137,11 +144,19 @@ def create_stacked_bar_chart(
     # Calculate percentages for stacked chart
     cross_tab_pct = cross_tab.div(cross_tab.sum(axis=1), axis=0) * 100
 
+    # Assign colors based on cluster semantic meaning
+    color_map = {
+        "Proactive Learners": "#95E1D3",  # Green - Positive
+        "Average Learners": "#FDB750",  # Yellow - Neutral
+        "Disengaged Learners": "#FF6B6B",  # Red - Concerning
+    }
+    colors = [color_map[col] for col in cross_tab_pct.columns]
+
     cross_tab_pct.plot(
         kind="bar",
         stacked=True,
         ax=ax,
-        color=["#4ECDC4", "#95E1D3", "#FDB750"],
+        color=colors,
         edgecolor="black",
         linewidth=1.2,
     )
