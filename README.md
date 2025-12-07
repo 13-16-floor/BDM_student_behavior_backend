@@ -90,6 +90,8 @@ python -m behavior_analysis attitude
 python -m behavior_analysis score_attitude_cross_analysis
 ```
 
+> **提示**：此方式下無需在命令前加 `docker compose exec`
+
 ## Development Setup
 
 ### 安裝開發依賴
