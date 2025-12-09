@@ -8,6 +8,7 @@ and conversion options.
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Literal
 
 
 def _detect_environment() -> str:
@@ -101,18 +102,52 @@ class ConversionConfig:
 
 
 @dataclass
+class BarrierAnalysisConfig:
+    """Configuration for barrier analysis."""
+
+    # Dimension weights
+    ACCESS_RESOURCES_WEIGHT: float = 0.25
+    INTERNET_ACCESS_WEIGHT: float = 0.25
+    LEARNING_DISABILITIES_WEIGHT: float = 0.25
+    GEOGRAPHIC_ISOLATION_WEIGHT: float = 0.25
+
+    # Missing data handling
+    MISSING_DATA_STRATEGY: Literal["drop", "impute_mean", "impute_zero"] = "impute_mean"
+
+    # Regression settings
+    ENABLE_COUNTRY_FE: bool = True
+    MIN_OBSERVATIONS_PER_COUNTRY: int = 30
+
+    # Random Forest settings
+    RF_NUM_TREES: int = 100
+    RF_MAX_DEPTH: int = 10
+    RF_MIN_INSTANCES: int = 10
+
+    # K-means settings
+    KMEANS_NUM_CLUSTERS: int = 4
+    KMEANS_MAX_ITERATIONS: int = 100
+    KMEANS_SEED: int = 42
+
+    # Thresholds for barrier categorization
+    BARRIER_LOW_THRESHOLD: float = 33.33  # percentile
+    BARRIER_HIGH_THRESHOLD: float = 66.67  # percentile
+
+
+@dataclass
 class AppConfig:
     """Main application configuration combining all config sections."""
 
     data: DataConfig
     spark: SparkConfig
     conversion: ConversionConfig
+    barrier: BarrierAnalysisConfig
 
     def __init__(self) -> None:
         """Initialize all configuration sections."""
         self.data = DataConfig()
         self.spark = SparkConfig()
         self.conversion = ConversionConfig()
+        self.barrier = BarrierAnalysisConfig()
 
     def get_spss_path(self, dataset_name: str) -> str:
         """Get full path to SPSS file for a given dataset."""

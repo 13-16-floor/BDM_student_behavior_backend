@@ -1,0 +1,819 @@
+{
+  "metadata": {
+    "generated_date": "2025-12-09",
+    "pisa_cycle": "2022",
+    "total_dimensions": 4,
+    "total_variables": 18
+  },
+  "dimensions": {
+    "access_to_resources": {
+      "variables": {
+        "HOMEPOS": {
+          "source": "Student",
+          "data_type": "float64",
+          "question": {
+            "original": "Home possessions (WLE)",
+            "chinese": "家庭財產指數（加權似然估計）"
+          },
+          "value_labels": {
+            "95.0": {
+              "original": "Valid Skip",
+              "chinese": "有效跳題"
+            },
+            "97.0": {
+              "original": "Not Applicable",
+              "chinese": "不適用"
+            },
+            "98.0": {
+              "original": "Invalid",
+              "chinese": "無效"
+            },
+            "99.0": {
+              "original": "No Response",
+              "chinese": "未回答"
+            }
+          },
+          "sample_values": [
+            "1.5995",
+            "-3.8115",
+            "0.2314",
+            "-2.5956",
+            "-0.5632"
+          ]
+        },
+        "WORKHOME": {
+          "source": "Student",
+          "data_type": "float64",
+          "question": {
+            "original": "Working in household/take care of family members before or after school",
+            "chinese": "上學前後在家做家務或照顧家人的頻率"
+          },
+          "value_labels": {
+            "0.0": {
+              "original": "No work in household or care of family members",
+              "chinese": "不做家務或照顧家人"
+            },
+            "1.0": {
+              "original": "1 time of working in household or caring for family members per week",
+              "chinese": "每週做家務或照顧家人1次"
+            },
+            "2.0": {
+              "original": "2 times of working in household or caring for family members per week",
+              "chinese": "每週做家務或照顧家人2次"
+            },
+            "3.0": {
+              "original": "3 times of working in household or caring for family members per week",
+              "chinese": "每週做家務或照顧家人3次"
+            },
+            "4.0": {
+              "original": "4 times of working in household or caring for family members per week",
+              "chinese": "每週做家務或照顧家人4次"
+            },
+            "5.0": {
+              "original": "5 times of working in household or caring for family members per week",
+              "chinese": "每週做家務或照顧家人5次"
+            },
+            "6.0": {
+              "original": "6 times of working in household or caring for family members per week",
+              "chinese": "每週做家務或照顧家人6次"
+            },
+            "7.0": {
+              "original": "7 times of working in household or caring for family members per week",
+              "chinese": "每週做家務或照顧家人7次"
+            },
+            "8.0": {
+              "original": "8 times of working in household or caring for family members per week",
+              "chinese": "每週做家務或照顧家人8次"
+            },
+            "9.0": {
+              "original": "9 times of working in household or caring for family members per week",
+              "chinese": "每週做家務或照顧家人9次"
+            },
+            "10.0": {
+              "original": "10 or more times of working in household or caring for family members per week",
+              "chinese": "每週做家務或照顧家人10次"
+            },
+            "95.0": {
+              "original": "Valid Skip",
+              "chinese": "有效跳題"
+            },
+            "97.0": {
+              "original": "Not Applicable",
+              "chinese": "不適用"
+            },
+            "98.0": {
+              "original": "Invalid",
+              "chinese": "無效"
+            },
+            "99.0": {
+              "original": "No Response",
+              "chinese": "未回答"
+            }
+          },
+          "sample_values": [
+            "10.0",
+            "0.0",
+            "10.0",
+            "4.0",
+            "5.0"
+          ]
+        },
+        "SC017Q01NA": {
+          "source": "School",
+          "data_type": "float64",
+          "question": {
+            "original": "Instruction hindered by: A lack of teaching staff",
+            "chinese": "教學受阻因素：缺乏教學人員"
+          },
+          "value_labels": {
+            "1.0": {
+              "original": "Not at all",
+              "chinese": "完全沒有"
+            },
+            "2.0": {
+              "original": "Very little",
+              "chinese": "很少"
+            },
+            "3.0": {
+              "original": "To some extent",
+              "chinese": "某種程度"
+            },
+            "4.0": {
+              "original": "A lot",
+              "chinese": "很多"
+            },
+            "95.0": {
+              "original": "Valid Skip",
+              "chinese": "有效跳題"
+            },
+            "97.0": {
+              "original": "Not Applicable",
+              "chinese": "不適用"
+            },
+            "98.0": {
+              "original": "Invalid",
+              "chinese": "無效"
+            },
+            "99.0": {
+              "original": "No Response",
+              "chinese": "未回答"
+            }
+          },
+          "sample_values": [
+            "2.0",
+            "1.0",
+            "2.0",
+            "1.0",
+            "1.0"
+          ]
+        },
+        "SC017Q02NA": {
+          "source": "School",
+          "data_type": "float64",
+          "question": {
+            "original": "Instruction hindered by: Inadequate or poorly qualified teaching staff",
+            "chinese": "教學受阻因素：教學人員不足或素質不佳"
+          },
+          "value_labels": {
+            "1.0": {
+              "original": "Not at all",
+              "chinese": "完全沒有"
+            },
+            "2.0": {
+              "original": "Very little",
+              "chinese": "很少"
+            },
+            "3.0": {
+              "original": "To some extent",
+              "chinese": "某種程度"
+            },
+            "4.0": {
+              "original": "A lot",
+              "chinese": "很多"
+            },
+            "95.0": {
+              "original": "Valid Skip",
+              "chinese": "有效跳題"
+            },
+            "97.0": {
+              "original": "Not Applicable",
+              "chinese": "不適用"
+            },
+            "98.0": {
+              "original": "Invalid",
+              "chinese": "無效"
+            },
+            "99.0": {
+              "original": "No Response",
+              "chinese": "未回答"
+            }
+          },
+          "sample_values": [
+            "1.0",
+            "1.0",
+            "2.0",
+            "1.0",
+            "3.0"
+          ]
+        },
+        "SC017Q03NA": {
+          "source": "School",
+          "data_type": "float64",
+          "question": {
+            "original": "Instruction hindered by: A lack of assisting staff",
+            "chinese": "教學受阻因素：缺乏輔助人員"
+          },
+          "value_labels": {
+            "1.0": {
+              "original": "Not at all",
+              "chinese": "完全沒有"
+            },
+            "2.0": {
+              "original": "Very little",
+              "chinese": "很少"
+            },
+            "3.0": {
+              "original": "To some extent",
+              "chinese": "某種程度"
+            },
+            "4.0": {
+              "original": "A lot",
+              "chinese": "很多"
+            },
+            "95.0": {
+              "original": "Valid Skip",
+              "chinese": "有效跳題"
+            },
+            "97.0": {
+              "original": "Not Applicable",
+              "chinese": "不適用"
+            },
+            "98.0": {
+              "original": "Invalid",
+              "chinese": "無效"
+            },
+            "99.0": {
+              "original": "No Response",
+              "chinese": "未回答"
+            }
+          },
+          "sample_values": [
+            "2.0",
+            "1.0",
+            "3.0",
+            "1.0",
+            "1.0"
+          ]
+        },
+        "SC017Q05NA": {
+          "source": "School",
+          "data_type": "float64",
+          "question": {
+            "original": "Instruction hindered by: A lack of educational material (e.g. textbooks, IT equipment, library or laboratory material)",
+            "chinese": "教學受阻因素：缺乏教材（如教科書、IT設備、圖書館或實驗室材料）"
+          },
+          "value_labels": {
+            "1.0": {
+              "original": "Not at all",
+              "chinese": "完全沒有"
+            },
+            "2.0": {
+              "original": "Very little",
+              "chinese": "很少"
+            },
+            "3.0": {
+              "original": "To some extent",
+              "chinese": "某種程度"
+            },
+            "4.0": {
+              "original": "A lot",
+              "chinese": "很多"
+            },
+            "95.0": {
+              "original": "Valid Skip",
+              "chinese": "有效跳題"
+            },
+            "97.0": {
+              "original": "Not Applicable",
+              "chinese": "不適用"
+            },
+            "98.0": {
+              "original": "Invalid",
+              "chinese": "無效"
+            },
+            "99.0": {
+              "original": "No Response",
+              "chinese": "未回答"
+            }
+          },
+          "sample_values": [
+            "3.0",
+            "4.0",
+            "3.0",
+            "3.0",
+            "3.0"
+          ]
+        }
+      }
+    },
+    "internet_access": {
+      "variables": {
+        "ICTRES": {
+          "source": "Student",
+          "data_type": "float64",
+          "question": {
+            "original": "ICT Resources (WLE)",
+            "chinese": "資訊與通訊科技資源指數（加權似然估計）"
+          },
+          "value_labels": {
+            "95.0": {
+              "original": "Valid Skip",
+              "chinese": "有效跳題"
+            },
+            "97.0": {
+              "original": "Not Applicable",
+              "chinese": "不適用"
+            },
+            "98.0": {
+              "original": "Invalid",
+              "chinese": "無效"
+            },
+            "99.0": {
+              "original": "No Response",
+              "chinese": "未回答"
+            }
+          },
+          "sample_values": [
+            "4.9507",
+            "-3.493",
+            "0.4307",
+            "-2.1392",
+            "-0.5542"
+          ]
+        },
+        "ICTHOME": {
+          "source": "Student",
+          "data_type": "float64",
+          "question": {
+            "original": "ICT availability outside of school  (WLE)",
+            "chinese": "校外資訊與通訊科技可用性（加權似然估計）"
+          },
+          "value_labels": {
+            "95.0": {
+              "original": "Valid Skip",
+              "chinese": "有效跳題"
+            },
+            "97.0": {
+              "original": "Not Applicable",
+              "chinese": "不適用"
+            },
+            "98.0": {
+              "original": "Invalid",
+              "chinese": "無效"
+            },
+            "99.0": {
+              "original": "No Response",
+              "chinese": "未回答"
+            }
+          },
+          "sample_values": [
+            "0.3346",
+            "-1.5118",
+            "-3.3582",
+            "0.3346",
+            "0.3346"
+          ]
+        },
+        "ICTAVHOM": {
+          "source": "Student",
+          "data_type": "float64",
+          "question": {
+            "original": "Availability and Usage of ICT at Home",
+            "chinese": "家中資訊與通訊科技的可用性與使用情況"
+          },
+          "value_labels": {
+            "0.0": {
+              "original": "No ICT resources available at home",
+              "chinese": "No ICT resources available at home"
+            },
+            "1.0": {
+              "original": "1 ICT resource available at home",
+              "chinese": "1 ICT resource available at home"
+            },
+            "2.0": {
+              "original": "2 ICT resources available at home",
+              "chinese": "2 ICT resources available at home"
+            },
+            "3.0": {
+              "original": "3 ICT resources available at home",
+              "chinese": "3 ICT resources available at home"
+            },
+            "4.0": {
+              "original": "4 ICT resources available at home",
+              "chinese": "4 ICT resources available at home"
+            },
+            "5.0": {
+              "original": "5 ICT resources available at home",
+              "chinese": "5 ICT resources available at home"
+            },
+            "6.0": {
+              "original": "6 ICT resources available at home",
+              "chinese": "6 ICT resources available at home"
+            },
+            "95.0": {
+              "original": "Valid Skip",
+              "chinese": "有效跳題"
+            },
+            "97.0": {
+              "original": "Not Applicable",
+              "chinese": "不適用"
+            },
+            "98.0": {
+              "original": "Invalid",
+              "chinese": "無效"
+            },
+            "99.0": {
+              "original": "No Response",
+              "chinese": "未回答"
+            }
+          },
+          "sample_values": [
+            "6.0",
+            "5.0",
+            "2.0",
+            "6.0",
+            "6.0"
+          ]
+        }
+      }
+    },
+    "learning_difficulties": {
+      "variables": {
+        "ST127Q01TA": {
+          "source": "Student",
+          "data_type": "float64",
+          "question": {
+            "original": "Have you ever repeated a [grade]: At [ISCED 1]",
+            "chinese": "你是否曾經留級：小學階段（ISCED 1）"
+          },
+          "value_labels": {
+            "1.0": {
+              "original": "No, never",
+              "chinese": "否，從未"
+            },
+            "2.0": {
+              "original": "Yes, once",
+              "chinese": "是，一次"
+            },
+            "3.0": {
+              "original": "Yes, twice or more",
+              "chinese": "是，兩次或以上"
+            },
+            "95.0": {
+              "original": "Valid Skip",
+              "chinese": "有效跳題"
+            },
+            "97.0": {
+              "original": "Not Applicable",
+              "chinese": "不適用"
+            },
+            "98.0": {
+              "original": "Invalid",
+              "chinese": "無效"
+            },
+            "99.0": {
+              "original": "No Response",
+              "chinese": "未回答"
+            }
+          },
+          "sample_values": [
+            "1.0",
+            "1.0",
+            "1.0",
+            "1.0",
+            "1.0"
+          ]
+        },
+        "ST127Q02TA": {
+          "source": "Student",
+          "data_type": "float64",
+          "question": {
+            "original": "Have you ever repeated a [grade]: At [ISCED 2]",
+            "chinese": "你是否曾經留級：國中階段（ISCED 2）"
+          },
+          "value_labels": {
+            "1.0": {
+              "original": "No, never",
+              "chinese": "否，從未"
+            },
+            "2.0": {
+              "original": "Yes, once",
+              "chinese": "是，一次"
+            },
+            "3.0": {
+              "original": "Yes, twice or more",
+              "chinese": "是，兩次或以上"
+            },
+            "95.0": {
+              "original": "Valid Skip",
+              "chinese": "有效跳題"
+            },
+            "97.0": {
+              "original": "Not Applicable",
+              "chinese": "不適用"
+            },
+            "98.0": {
+              "original": "Invalid",
+              "chinese": "無效"
+            },
+            "99.0": {
+              "original": "No Response",
+              "chinese": "未回答"
+            }
+          },
+          "sample_values": [
+            "1.0",
+            "1.0",
+            "2.0",
+            "1.0",
+            "1.0"
+          ]
+        },
+        "ST127Q03TA": {
+          "source": "Student",
+          "data_type": "float64",
+          "question": {
+            "original": "Have you ever repeated a [grade]: At [ISCED 3]",
+            "chinese": "你是否曾經留級：高中階段（ISCED 3）"
+          },
+          "value_labels": {
+            "1.0": {
+              "original": "No, never",
+              "chinese": "否，從未"
+            },
+            "2.0": {
+              "original": "Yes, once",
+              "chinese": "是，一次"
+            },
+            "3.0": {
+              "original": "Yes, twice or more",
+              "chinese": "是，兩次或以上"
+            },
+            "95.0": {
+              "original": "Valid Skip",
+              "chinese": "有效跳題"
+            },
+            "97.0": {
+              "original": "Not Applicable",
+              "chinese": "不適用"
+            },
+            "98.0": {
+              "original": "Invalid",
+              "chinese": "無效"
+            },
+            "99.0": {
+              "original": "No Response",
+              "chinese": "未回答"
+            }
+          },
+          "sample_values": [
+            "1.0",
+            "1.0",
+            "1.0",
+            "1.0",
+            "1.0"
+          ]
+        },
+        "ANXMAT": {
+          "source": "Student",
+          "data_type": "float64",
+          "question": {
+            "original": "Mathematics Anxiety (WLE)",
+            "chinese": "數學焦慮指數（加權似然估計）"
+          },
+          "value_labels": {
+            "95.0": {
+              "original": "Valid Skip",
+              "chinese": "有效跳題"
+            },
+            "97.0": {
+              "original": "Not Applicable",
+              "chinese": "不適用"
+            },
+            "98.0": {
+              "original": "Invalid",
+              "chinese": "無效"
+            },
+            "99.0": {
+              "original": "No Response",
+              "chinese": "未回答"
+            }
+          },
+          "sample_values": [
+            "0.544",
+            "0.5653",
+            "-0.2704",
+            "-1.2286",
+            "-0.508"
+          ]
+        }
+      }
+    },
+    "geographic_disadvantage": {
+      "variables": {
+        "SC001Q01TA": {
+          "source": "School",
+          "data_type": "float64",
+          "question": {
+            "original": "Which of the following definitions best describes the community in which your school is located?",
+            "chinese": "以下哪個定義最能描述你學校所在的社區？"
+          },
+          "value_labels": {
+            "1.0": {
+              "original": "A village, hamlet or rural area (fewer than 3 000 people)",
+              "chinese": "村莊、小村或鄉村地區（少於3000人）"
+            },
+            "2.0": {
+              "original": "A small town (3 000 to about 15 000 people)",
+              "chinese": "小鎮（3000至約15000人）"
+            },
+            "3.0": {
+              "original": "A town (15 000 to about 100 000 people)",
+              "chinese": "城鎮（15000至約100000人）"
+            },
+            "4.0": {
+              "original": "A city (100 000 to about 1 000 000 people)",
+              "chinese": "城市（100000至約100萬人）"
+            },
+            "5.0": {
+              "original": "A large city (1 000 000 to about 10 000 000 people)",
+              "chinese": "大城市（100萬至約1000萬人）"
+            },
+            "6.0": {
+              "original": "A megacity (with over 10 000 000 people)",
+              "chinese": "超大城市（超過1000萬人）"
+            },
+            "95.0": {
+              "original": "Valid Skip",
+              "chinese": "有效跳題"
+            },
+            "97.0": {
+              "original": "Not Applicable",
+              "chinese": "不適用"
+            },
+            "98.0": {
+              "original": "Invalid",
+              "chinese": "無效"
+            },
+            "99.0": {
+              "original": "No Response",
+              "chinese": "未回答"
+            }
+          },
+          "sample_values": [
+            "3.0",
+            "1.0",
+            "2.0",
+            "3.0",
+            "3.0"
+          ]
+        },
+        "ST260Q01JA": {
+          "source": "Student",
+          "data_type": "float64",
+          "question": {
+            "original": "Have you ever missed school for more than three months in a row: At [ISCED 1]",
+            "chinese": "你是否曾經連續缺課超過三個月：小學階段（ISCED 1）"
+          },
+          "value_labels": {
+            "1.0": {
+              "original": "No, never",
+              "chinese": "否，從未"
+            },
+            "2.0": {
+              "original": "Yes, once",
+              "chinese": "是，一次"
+            },
+            "3.0": {
+              "original": "Yes, twice or more",
+              "chinese": "是，兩次或以上"
+            },
+            "95.0": {
+              "original": "Valid Skip",
+              "chinese": "有效跳題"
+            },
+            "97.0": {
+              "original": "Not Applicable",
+              "chinese": "不適用"
+            },
+            "98.0": {
+              "original": "Invalid",
+              "chinese": "無效"
+            },
+            "99.0": {
+              "original": "No Response",
+              "chinese": "未回答"
+            }
+          },
+          "sample_values": [
+            "1.0",
+            "1.0",
+            "1.0",
+            "1.0",
+            "1.0"
+          ]
+        },
+        "ST260Q02JA": {
+          "source": "Student",
+          "data_type": "float64",
+          "question": {
+            "original": "Have you ever missed school for more than three months in a row: At [ISCED 2]",
+            "chinese": "你是否曾經連續缺課超過三個月：國中階段（ISCED 2）"
+          },
+          "value_labels": {
+            "1.0": {
+              "original": "No, never",
+              "chinese": "否，從未"
+            },
+            "2.0": {
+              "original": "Yes, once",
+              "chinese": "是，一次"
+            },
+            "3.0": {
+              "original": "Yes, twice or more",
+              "chinese": "是，兩次或以上"
+            },
+            "95.0": {
+              "original": "Valid Skip",
+              "chinese": "有效跳題"
+            },
+            "97.0": {
+              "original": "Not Applicable",
+              "chinese": "不適用"
+            },
+            "98.0": {
+              "original": "Invalid",
+              "chinese": "無效"
+            },
+            "99.0": {
+              "original": "No Response",
+              "chinese": "未回答"
+            }
+          },
+          "sample_values": [
+            "1.0",
+            "1.0",
+            "1.0",
+            "1.0",
+            "1.0"
+          ]
+        },
+        "ST260Q03JA": {
+          "source": "Student",
+          "data_type": "float64",
+          "question": {
+            "original": "Have you ever missed school for more than three months in a row: At [ISCED 3]",
+            "chinese": "你是否曾經連續缺課超過三個月：高中階段（ISCED 3）"
+          },
+          "value_labels": {
+            "1.0": {
+              "original": "No, never",
+              "chinese": "否，從未"
+            },
+            "2.0": {
+              "original": "Yes, once",
+              "chinese": "是，一次"
+            },
+            "3.0": {
+              "original": "Yes, twice or more",
+              "chinese": "是，兩次或以上"
+            },
+            "95.0": {
+              "original": "Valid Skip",
+              "chinese": "有效跳題"
+            },
+            "97.0": {
+              "original": "Not Applicable",
+              "chinese": "不適用"
+            },
+            "98.0": {
+              "original": "Invalid",
+              "chinese": "無效"
+            },
+            "99.0": {
+              "original": "No Response",
+              "chinese": "未回答"
+            }
+          },
+          "sample_values": [
+            "1.0",
+            "1.0",
+            "1.0",
+            "1.0",
+            "1.0"
+          ]
+        }
+      }
+    }
+  }
+}

@@ -5,6 +5,7 @@ Handles conversion of SPSS (.sav) files to Parquet format with support for
 large files through batched processing.
 """
 
+import json
 import os
 import tempfile
 from pathlib import Path
@@ -58,7 +59,71 @@ class SPSSToParquetConverter:
         """
         return not should_reconvert(parquet_path, spss_path)
 
-    def convert_file(self, spss_path: str, parquet_path: str, force: bool = False) -> bool:
+    def export_metadata_to_json(
+        self, spss_path: str, output_json_path: str, sample_rows: int = 100
+    ) -> bool:
+        """
+        Export complete SPSS file metadata to JSON.
+
+        Args:
+            spss_path: Path to SPSS .sav file
+            output_json_path: Path to output JSON file
+            sample_rows: Number of rows to sample for extracting sample values
+
+        Returns:
+            bool: True if export succeeded
+        """
+        try:
+            self.logger.info(f"Exporting metadata from: {spss_path}")
+
+            # Read SPSS file with metadata (limit rows for faster processing)
+            df, meta = pyreadstat.read_sav(spss_path, row_limit=sample_rows)
+
+            self.logger.info(f"Found {len(meta.column_names)} columns")
+
+            # Extract metadata for each column
+            metadata = {}
+            for col_name in meta.column_names:
+                col_info = {
+                    "name": col_name,
+                    "label": meta.column_names_to_labels.get(col_name, ""),
+                    "type": str(df[col_name].dtype),
+                    "value_labels": {},
+                    "sample_values": [],
+                }
+
+                # Add value labels if available
+                if col_name in meta.variable_value_labels:
+                    col_info["value_labels"] = {
+                        str(k): v for k, v in meta.variable_value_labels[col_name].items()
+                    }
+
+                # Add sample non-null values
+                sample_values = df[col_name].dropna().head(5).tolist()
+                col_info["sample_values"] = [str(v) for v in sample_values]
+
+                metadata[col_name] = col_info
+
+            # Write to JSON
+            self.logger.info(f"Writing metadata to: {output_json_path}")
+            with Path(output_json_path).open("w", encoding="utf-8") as f:
+                json.dump(metadata, f, indent=2, ensure_ascii=False)
+
+            self.logger.info(f"✓ Exported metadata for {len(metadata)} columns")
+            return True
+
+        except Exception as e:
+            self.logger.error(f"Failed to export metadata: {e}")
+            return False
+
+    def convert_file(
+        self,
+        spss_path: str,
+        parquet_path: str,
+        force: bool = False,
+        export_metadata: bool = True,
+        metadata_output_dir: str = "/data",
+    ) -> bool:
         """
         Convert SPSS file to Parquet format.
 
@@ -66,6 +131,8 @@ class SPSSToParquetConverter:
             spss_path: Path to input SPSS file
             parquet_path: Path to output Parquet file
             force: If True, reconvert even if already converted
+            export_metadata: If True, export metadata JSON on first conversion
+            metadata_output_dir: Directory to save metadata JSON files
 
         Returns:
             bool: True if conversion succeeded
@@ -80,8 +147,11 @@ class SPSSToParquetConverter:
         if not spss.exists():
             raise FileNotFoundError(f"SPSS file not found: {spss_path}")
 
+        # Check if this is first-time conversion
+        is_first_conversion = not self.is_converted(parquet_path, spss_path)
+
         # Check if already converted
-        if not force and self.is_converted(parquet_path, spss_path):
+        if not force and not is_first_conversion:
             self.logger.info(f"File already converted: {parquet_path}")
             return True
 
@@ -112,6 +182,29 @@ class SPSSToParquetConverter:
                 success = self._convert_large_file(spss_path, parquet_path)
 
             if success:
+                # Export metadata on first conversion
+                if is_first_conversion and export_metadata:
+                    # Determine dataset name from SPSS filename
+                    spss_filename = Path(spss_path).stem
+                    metadata_json_path = str(
+                        Path(metadata_output_dir) / f"{spss_filename}_metadata.json"
+                    )
+
+                    # Check if metadata JSON already exists
+                    if not Path(metadata_json_path).exists():
+                        self.logger.info("Exporting SPSS metadata to JSON (first conversion)...")
+                        metadata_exported = self.export_metadata_to_json(
+                            spss_path, metadata_json_path, sample_rows=100
+                        )
+                        if metadata_exported:
+                            self.logger.info(f"Metadata exported: {metadata_json_path}")
+                        else:
+                            self.logger.warning(
+                                "Metadata export failed, but continuing with conversion"
+                            )
+                    else:
+                        self.logger.info(f"Metadata JSON already exists: {metadata_json_path}")
+
                 # Mark as converted
                 _, meta = pyreadstat.read_sav(spss_path, metadataonly=True)
                 mark_conversion_completed(
@@ -206,7 +299,10 @@ class SPSSToParquetConverter:
 
                 # Read batch
                 df, _ = pyreadstat.read_sav(
-                    spss_path, row_offset=offset, row_limit=rows_to_read, user_missing=True
+                    spss_path,
+                    row_offset=offset,
+                    row_limit=rows_to_read,
+                    user_missing=True,
                 )
 
                 # Convert to PyArrow Table
@@ -248,7 +344,11 @@ class SPSSToParquetConverter:
             raise
 
     def convert_all(
-        self, spss_files: dict[str, str], data_dir: str, parquet_dir: str, force: bool = False
+        self,
+        spss_files: dict[str, str],
+        data_dir: str,
+        parquet_dir: str,
+        force: bool = False,
     ) -> dict[str, dict[str, bool | str | None]]:
         """
         Convert multiple SPSS files to Parquet.

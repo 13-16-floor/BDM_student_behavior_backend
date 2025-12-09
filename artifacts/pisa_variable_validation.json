@@ -1,0 +1,503 @@
+{
+  "summary": {
+    "total_variables": 45,
+    "found": 18,
+    "missing": 27
+  },
+  "dimensions": {
+    "Access_to_Resources": {
+      "description": "家庭和學校的教育資源可及性",
+      "categories": {
+        "home_level": {
+          "variables": {
+            "ST011Q01TA": {
+              "found": false,
+              "reason": "變數在 metadata 中不存在"
+            },
+            "ST011Q02TA": {
+              "found": false,
+              "reason": "變數在 metadata 中不存在"
+            },
+            "ST011Q03TA": {
+              "found": false,
+              "reason": "變數在 metadata 中不存在"
+            },
+            "ST011Q04TA": {
+              "found": false,
+              "reason": "變數在 metadata 中不存在"
+            },
+            "ST011Q05TA": {
+              "found": false,
+              "reason": "變數在 metadata 中不存在"
+            },
+            "ST011Q06TA": {
+              "found": false,
+              "reason": "變數在 metadata 中不存在"
+            },
+            "ST011Q16NA": {
+              "found": false,
+              "reason": "變數在 metadata 中不存在"
+            },
+            "ST013Q01TA": {
+              "found": false,
+              "reason": "變數在 metadata 中不存在"
+            },
+            "HEDRES": {
+              "found": false,
+              "reason": "變數在 metadata 中不存在"
+            },
+            "HOMEPOS": {
+              "found": true,
+              "source": "CY08MSP_STU_QQQ",
+              "column_label": "Home possessions (WLE)",
+              "data_type": "float64",
+              "question_text": "",
+              "value_labels": {
+                "95.0": "Valid Skip",
+                "97.0": "Not Applicable",
+                "98.0": "Invalid",
+                "99.0": "No Response"
+              },
+              "missing_values": {}
+            },
+            "WORKHOME": {
+              "found": true,
+              "source": "CY08MSP_STU_QQQ",
+              "column_label": "Working in household/take care of family members before or after school",
+              "data_type": "float64",
+              "question_text": "",
+              "value_labels": {
+                "0.0": "No work in household or care of family members",
+                "1.0": "1 time of working in household or caring for family members per week",
+                "2.0": "2 times of working in household or caring for family members per week",
+                "3.0": "3 times of working in household or caring for family members per week",
+                "4.0": "4 times of working in household or caring for family members per week",
+                "5.0": "5 times of working in household or caring for family members per week",
+                "6.0": "6 times of working in household or caring for family members per week",
+                "7.0": "7 times of working in household or caring for family members per week",
+                "8.0": "8 times of working in household or caring for family members per week",
+                "9.0": "9 times of working in household or caring for family members per week",
+                "10.0": "10 or more times of working in household or caring for family members per week",
+                "95.0": "Valid Skip",
+                "97.0": "Not Applicable",
+                "98.0": "Invalid",
+                "99.0": "No Response"
+              },
+              "missing_values": {}
+            }
+          }
+        },
+        "school_level": {
+          "variables": {
+            "SC017Q01NA": {
+              "found": true,
+              "source": "CY08MSP_SCH_QQQ",
+              "column_label": "Instruction hindered by: A lack of teaching staff",
+              "data_type": "float64",
+              "question_text": "",
+              "value_labels": {
+                "1.0": "Not at all",
+                "2.0": "Very little",
+                "3.0": "To some extent",
+                "4.0": "A lot",
+                "95.0": "Valid Skip",
+                "97.0": "Not Applicable",
+                "98.0": "Invalid",
+                "99.0": "No Response"
+              },
+              "missing_values": {}
+            },
+            "SC017Q02NA": {
+              "found": true,
+              "source": "CY08MSP_SCH_QQQ",
+              "column_label": "Instruction hindered by: Inadequate or poorly qualified teaching staff",
+              "data_type": "float64",
+              "question_text": "",
+              "value_labels": {
+                "1.0": "Not at all",
+                "2.0": "Very little",
+                "3.0": "To some extent",
+                "4.0": "A lot",
+                "95.0": "Valid Skip",
+                "97.0": "Not Applicable",
+                "98.0": "Invalid",
+                "99.0": "No Response"
+              },
+              "missing_values": {}
+            },
+            "SC017Q03NA": {
+              "found": true,
+              "source": "CY08MSP_SCH_QQQ",
+              "column_label": "Instruction hindered by: A lack of assisting staff",
+              "data_type": "float64",
+              "question_text": "",
+              "value_labels": {
+                "1.0": "Not at all",
+                "2.0": "Very little",
+                "3.0": "To some extent",
+                "4.0": "A lot",
+                "95.0": "Valid Skip",
+                "97.0": "Not Applicable",
+                "98.0": "Invalid",
+                "99.0": "No Response"
+              },
+              "missing_values": {}
+            },
+            "SC017Q05NA": {
+              "found": true,
+              "source": "CY08MSP_SCH_QQQ",
+              "column_label": "Instruction hindered by: A lack of educational material (e.g. textbooks, IT equipment, library or laboratory material)",
+              "data_type": "float64",
+              "question_text": "",
+              "value_labels": {
+                "1.0": "Not at all",
+                "2.0": "Very little",
+                "3.0": "To some extent",
+                "4.0": "A lot",
+                "95.0": "Valid Skip",
+                "97.0": "Not Applicable",
+                "98.0": "Invalid",
+                "99.0": "No Response"
+              },
+              "missing_values": {}
+            }
+          }
+        }
+      },
+      "statistics": {
+        "total": 15,
+        "found": 6,
+        "missing": 9
+      }
+    },
+    "Internet_Access": {
+      "description": "數位資源與網路連線可及性",
+      "categories": {
+        "home_ict": {
+          "variables": {
+            "ST011Q03TA": {
+              "found": false,
+              "reason": "變數在 metadata 中不存在"
+            },
+            "ST011Q04TA": {
+              "found": false,
+              "reason": "變數在 metadata 中不存在"
+            },
+            "ST012Q01TA": {
+              "found": false,
+              "reason": "變數在 metadata 中不存在"
+            },
+            "ST012Q02TA": {
+              "found": false,
+              "reason": "變數在 metadata 中不存在"
+            },
+            "ST012Q06NA": {
+              "found": false,
+              "reason": "變數在 metadata 中不存在"
+            },
+            "ST012Q09NA": {
+              "found": false,
+              "reason": "變數在 metadata 中不存在"
+            },
+            "ICTRES": {
+              "found": true,
+              "source": "CY08MSP_STU_QQQ",
+              "column_label": "ICT Resources (WLE)",
+              "data_type": "float64",
+              "question_text": "",
+              "value_labels": {
+                "95.0": "Valid Skip",
+                "97.0": "Not Applicable",
+                "98.0": "Invalid",
+                "99.0": "No Response"
+              },
+              "missing_values": {}
+            },
+            "ICTHOME": {
+              "found": true,
+              "source": "CY08MSP_STU_QQQ",
+              "column_label": "ICT availability outside of school  (WLE)",
+              "data_type": "float64",
+              "question_text": "",
+              "value_labels": {
+                "95.0": "Valid Skip",
+                "97.0": "Not Applicable",
+                "98.0": "Invalid",
+                "99.0": "No Response"
+              },
+              "missing_values": {}
+            },
+            "ICTAVHOM": {
+              "found": true,
+              "source": "CY08MSP_STU_QQQ",
+              "column_label": "Availability and Usage of ICT at Home",
+              "data_type": "float64",
+              "question_text": "",
+              "value_labels": {
+                "0.0": "No ICT resources available at home",
+                "1.0": "1 ICT resource available at home",
+                "2.0": "2 ICT resources available at home",
+                "3.0": "3 ICT resources available at home",
+                "4.0": "4 ICT resources available at home",
+                "5.0": "5 ICT resources available at home",
+                "6.0": "6 ICT resources available at home",
+                "95.0": "Valid Skip",
+                "97.0": "Not Applicable",
+                "98.0": "Invalid",
+                "99.0": "No Response"
+              },
+              "missing_values": {}
+            }
+          }
+        },
+        "ict_usage": {
+          "variables": {
+            "IC001Q01TA": {
+              "found": false,
+              "reason": "變數在 metadata 中不存在"
+            },
+            "IC009Q01TA": {
+              "found": false,
+              "reason": "變數在 metadata 中不存在"
+            },
+            "IC010Q01TA": {
+              "found": false,
+              "reason": "變數在 metadata 中不存在"
+            }
+          }
+        }
+      },
+      "statistics": {
+        "total": 12,
+        "found": 3,
+        "missing": 9
+      }
+    },
+    "Learning_Disabilities": {
+      "description": "學習困難與障礙（間接測量）",
+      "categories": {
+        "grade_repetition": {
+          "variables": {
+            "ST127Q01TA": {
+              "found": true,
+              "source": "CY08MSP_STU_QQQ",
+              "column_label": "Have you ever repeated a [grade]: At [ISCED 1]",
+              "data_type": "float64",
+              "question_text": "",
+              "value_labels": {
+                "1.0": "No, never",
+                "2.0": "Yes, once",
+                "3.0": "Yes, twice or more",
+                "95.0": "Valid Skip",
+                "97.0": "Not Applicable",
+                "98.0": "Invalid",
+                "99.0": "No Response"
+              },
+              "missing_values": {}
+            },
+            "ST127Q02TA": {
+              "found": true,
+              "source": "CY08MSP_STU_QQQ",
+              "column_label": "Have you ever repeated a [grade]: At [ISCED 2]",
+              "data_type": "float64",
+              "question_text": "",
+              "value_labels": {
+                "1.0": "No, never",
+                "2.0": "Yes, once",
+                "3.0": "Yes, twice or more",
+                "95.0": "Valid Skip",
+                "97.0": "Not Applicable",
+                "98.0": "Invalid",
+                "99.0": "No Response"
+              },
+              "missing_values": {}
+            },
+            "ST127Q03TA": {
+              "found": true,
+              "source": "CY08MSP_STU_QQQ",
+              "column_label": "Have you ever repeated a [grade]: At [ISCED 3]",
+              "data_type": "float64",
+              "question_text": "",
+              "value_labels": {
+                "1.0": "No, never",
+                "2.0": "Yes, once",
+                "3.0": "Yes, twice or more",
+                "95.0": "Valid Skip",
+                "97.0": "Not Applicable",
+                "98.0": "Invalid",
+                "99.0": "No Response"
+              },
+              "missing_values": {}
+            }
+          }
+        },
+        "learning_anxiety": {
+          "variables": {
+            "ST118Q01NA": {
+              "found": false,
+              "reason": "變數在 metadata 中不存在"
+            },
+            "ST118Q02NA": {
+              "found": false,
+              "reason": "變數在 metadata 中不存在"
+            },
+            "ST118Q03NA": {
+              "found": false,
+              "reason": "變數在 metadata 中不存在"
+            },
+            "ST118Q04NA": {
+              "found": false,
+              "reason": "變數在 metadata 中不存在"
+            },
+            "ST118Q05NA": {
+              "found": false,
+              "reason": "變數在 metadata 中不存在"
+            },
+            "ANXMAT": {
+              "found": true,
+              "source": "CY08MSP_STU_QQQ",
+              "column_label": "Mathematics Anxiety (WLE)",
+              "data_type": "float64",
+              "question_text": "",
+              "value_labels": {
+                "95.0": "Valid Skip",
+                "97.0": "Not Applicable",
+                "98.0": "Invalid",
+                "99.0": "No Response"
+              },
+              "missing_values": {}
+            }
+          }
+        },
+        "self_efficacy": {
+          "variables": {
+            "ST119Q01NA": {
+              "found": false,
+              "reason": "變數在 metadata 中不存在"
+            },
+            "ST119Q02NA": {
+              "found": false,
+              "reason": "變數在 metadata 中不存在"
+            },
+            "ST119Q03NA": {
+              "found": false,
+              "reason": "變數在 metadata 中不存在"
+            },
+            "ST119Q04NA": {
+              "found": false,
+              "reason": "變數在 metadata 中不存在"
+            },
+            "ANXMAT": {
+              "found": true,
+              "source": "CY08MSP_STU_QQQ",
+              "column_label": "Mathematics Anxiety (WLE)",
+              "data_type": "float64",
+              "question_text": "",
+              "value_labels": {
+                "95.0": "Valid Skip",
+                "97.0": "Not Applicable",
+                "98.0": "Invalid",
+                "99.0": "No Response"
+              },
+              "missing_values": {}
+            }
+          }
+        }
+      },
+      "statistics": {
+        "total": 14,
+        "found": 5,
+        "missing": 9
+      }
+    },
+    "Geographic_Disadvantage": {
+      "description": "地理位置與通勤距離（間接測量）",
+      "categories": {
+        "school_location": {
+          "variables": {
+            "SC001Q01TA": {
+              "found": true,
+              "source": "CY08MSP_SCH_QQQ",
+              "column_label": "Which of the following definitions best describes the community in which your school is located?",
+              "data_type": "float64",
+              "question_text": "",
+              "value_labels": {
+                "1.0": "A village, hamlet or rural area (fewer than 3 000 people)",
+                "2.0": "A small town (3 000 to about 15 000 people)",
+                "3.0": "A town (15 000 to about 100 000 people)",
+                "4.0": "A city (100 000 to about 1 000 000 people)",
+                "5.0": "A large city (1 000 000 to about 10 000 000 people)",
+                "6.0": "A megacity (with over 10 000 000 people)",
+                "95.0": "Valid Skip",
+                "97.0": "Not Applicable",
+                "98.0": "Invalid",
+                "99.0": "No Response"
+              },
+              "missing_values": {}
+            }
+          }
+        },
+        "student_level_proxies": {
+          "variables": {
+            "ST260Q01JA": {
+              "found": true,
+              "source": "CY08MSP_STU_QQQ",
+              "column_label": "Have you ever missed school for more than three months in a row: At [ISCED 1]",
+              "data_type": "float64",
+              "question_text": "",
+              "value_labels": {
+                "1.0": "No, never",
+                "2.0": "Yes, once",
+                "3.0": "Yes, twice or more",
+                "95.0": "Valid Skip",
+                "97.0": "Not Applicable",
+                "98.0": "Invalid",
+                "99.0": "No Response"
+              },
+              "missing_values": {}
+            },
+            "ST260Q02JA": {
+              "found": true,
+              "source": "CY08MSP_STU_QQQ",
+              "column_label": "Have you ever missed school for more than three months in a row: At [ISCED 2]",
+              "data_type": "float64",
+              "question_text": "",
+              "value_labels": {
+                "1.0": "No, never",
+                "2.0": "Yes, once",
+                "3.0": "Yes, twice or more",
+                "95.0": "Valid Skip",
+                "97.0": "Not Applicable",
+                "98.0": "Invalid",
+                "99.0": "No Response"
+              },
+              "missing_values": {}
+            },
+            "ST260Q03JA": {
+              "found": true,
+              "source": "CY08MSP_STU_QQQ",
+              "column_label": "Have you ever missed school for more than three months in a row: At [ISCED 3]",
+              "data_type": "float64",
+              "question_text": "",
+              "value_labels": {
+                "1.0": "No, never",
+                "2.0": "Yes, once",
+                "3.0": "Yes, twice or more",
+                "95.0": "Valid Skip",
+                "97.0": "Not Applicable",
+                "98.0": "Invalid",
+                "99.0": "No Response"
+              },
+              "missing_values": {}
+            }
+          }
+        }
+      },
+      "statistics": {
+        "total": 4,
+        "found": 4,
+        "missing": 0
+      }
+    }
+  }
+}
