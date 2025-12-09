@@ -106,7 +106,7 @@ def main(target_column: str | None = None) -> None:
 
     print("\n" + "=" * 70)
     print("PISA Behavior Analysis Application")
-    print("=" * 70 + "\n", flush=True)
+    print("=" * 70 + "\n")
 
     # 1. Initialize configuration and logging
     config = load_config()
@@ -139,19 +139,19 @@ def main(target_column: str | None = None) -> None:
             # Check if already converted
             if converter.is_converted(parquet_path, spss_path):
                 logger.info("  Status: Already converted, skipping...")
-                print(f"✓ {dataset_name}: Already converted", flush=True)
+                print(f"✓ {dataset_name}: Already converted")
             else:
                 logger.info("  Status: Converting...")
-                print(f"⟳ {dataset_name}: Converting...", flush=True)
+                print(f"⟳ {dataset_name}: Converting...")
 
                 success = converter.convert_file(spss_path, parquet_path)
 
                 if success:
                     logger.info("  Result: Conversion successful")
-                    print(f"✓ {dataset_name}: Conversion completed", flush=True)
+                    print(f"✓ {dataset_name}: Conversion completed")
                 else:
                     logger.error("  Result: Conversion failed")
-                    print(f"✗ {dataset_name}: Conversion failed", flush=True)
+                    print(f"✗ {dataset_name}: Conversion failed")
 
         # 4. Spark Analysis Phase
         logger.info("\n" + "-" * 70)
@@ -187,7 +187,7 @@ def main(target_column: str | None = None) -> None:
 
     except Exception as e:  # noqa: BLE001
         logger.error("Application failed with error: %s", e, exc_info=True)
-        print(f"\n✗ Error: {e}", flush=True)
+        print(f"\n✗ Error: {e}")
         sys.exit(1)
 
 
@@ -195,17 +195,17 @@ if __name__ == "__main__":
     # Support command-line arguments
     if len(sys.argv) > 1:
         if sys.argv[1] == "attitude":
-            # Run attitude clustering test
-            from .attitude_test import test_attitude_clustering
+            # Run attitude clustering analysis
+            from .analysis.attitude_analysis import run_attitude_clustering
 
-            test_attitude_clustering()
+            run_attitude_clustering()
         elif sys.argv[1] == "score_attitude_cross_analysis":
             # Run score-attitude cross-dimensional analysis
-            from .score_attitude_cross_analysis_test import (
-                test_score_attitude_cross_analysis,
+            from .analysis.score_attitude_cross_demo import (
+                run_score_attitude_cross_analysis,
             )
 
-            test_score_attitude_cross_analysis()
+            run_score_attitude_cross_analysis()
         else:
             # Run default score clustering with optional column
             main(target_column=sys.argv[1])
