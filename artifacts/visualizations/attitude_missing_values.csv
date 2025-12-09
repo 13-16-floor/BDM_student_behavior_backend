@@ -1,0 +1,9 @@
+Variable,Variable_Code,Total_Count,Valid_Count,Missing_Count,Missing_Rate_%
+Learning Time,ST296Q01JA,613744,594721,19023,3.1
+School Discipline (inverted),ST062Q01TA,613744,600785,12959,2.11
+Math Motivation,MATHMOT,613744,613744,0,0.0
+Perseverance,PERSEVAGR,613744,613744,0,0.0
+--- SAMPLE LOSS SUMMARY ---,,,,,
+Original Sample,,613744,594598,19146,3.12
+--- WEIGHTED POPULATION LOSS ---,,,,,
+Original Population,,28255205,27313622,941583,3.33
