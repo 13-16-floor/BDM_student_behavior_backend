@@ -180,6 +180,9 @@ def create_attitude_composite_score(
                 f.mean(f.col(col)).alias("mean"), f.stddev(f.col(col)).alias("std")
             ).first()
 
+            if stats is None:
+                raise ValueError(f"Unable to compute statistics for column {col}")
+
             mean_val = stats["mean"] if stats["mean"] is not None else 0
             std_val = stats["std"] if stats["std"] is not None and stats["std"] > 0 else 1
 
@@ -187,10 +190,14 @@ def create_attitude_composite_score(
 
             if col in reverse_coded:
                 # Reverse code: negate after standardization
-                working_df = working_df.withColumn(std_col, -((f.col(col) - mean_val) / std_val))
+                working_df = working_df.withColumn(
+                    std_col, -((f.col(col) - f.lit(mean_val)) / f.lit(std_val))
+                )
                 logger.info("  %s: standardized and reverse-coded", col)
             else:
-                working_df = working_df.withColumn(std_col, (f.col(col) - mean_val) / std_val)
+                working_df = working_df.withColumn(
+                    std_col, (f.col(col) - f.lit(mean_val)) / f.lit(std_val)
+                )
                 logger.info("  %s: standardized", col)
 
             std_cols.append(std_col)
@@ -199,7 +206,7 @@ def create_attitude_composite_score(
 
     # Create composite score (average of standardized scores)
     if std_cols:
-        composite_expr = sum(f.col(col) for col in std_cols) / len(std_cols)
+        composite_expr = sum(f.col(col) for col in std_cols) / f.lit(len(std_cols))
         working_df = working_df.withColumn(output_column, composite_expr)
         logger.info("Composite attitude score created: %s", output_column)
     else:
@@ -361,6 +368,9 @@ def run_interaction_regression(
         f.expr(f"percentile_approx({barrier_var}, 0.75)").alias("p75"),
     ).first()
 
+    if barrier_percentiles is None:
+        raise ValueError("Unable to compute barrier percentiles")
+
     marginal_effects = {
         "low_barrier (P25)": {
             "barrier_level": float(barrier_percentiles["p25"]),
@@ -463,9 +473,12 @@ def run_stratified_analysis(
     if stratify_by == "barrier_level":
         # Create barrier tertiles
         percentiles = working_df.select(
-            f.expr(f"percentile_approx({config.barrier_column}, 0.33)").alias("p33"),
-            f.expr(f"percentile_approx({config.barrier_column}, 0.67)").alias("p67"),
+            f.expr("percentile_approx(" + config.barrier_column + ", 0.33)").alias("p33"),
+            f.expr("percentile_approx(" + config.barrier_column + ", 0.67)").alias("p67"),
         ).first()
+
+        if percentiles is None:
+            raise ValueError("Unable to compute barrier percentiles for stratification")
 
         strata = {
             "low_barrier": working_df.filter(f.col(config.barrier_column) < percentiles["p33"]),
@@ -481,6 +494,9 @@ def run_stratified_analysis(
             f.expr("percentile_approx(attitude_score, 0.33)").alias("p33"),
             f.expr("percentile_approx(attitude_score, 0.67)").alias("p67"),
         ).first()
+
+        if percentiles is None:
+            raise ValueError("Unable to compute attitude percentiles for stratification")
 
         strata = {
             "negative_attitude": working_df.filter(f.col("attitude_score") < percentiles["p33"]),
@@ -589,6 +605,9 @@ def prepare_interaction_plot_data(
     # Create group labels
     barrier_labels = ["Low Barrier", "Medium Barrier", "High Barrier"][:num_barrier_groups]
     attitude_labels = ["Negative", "Neutral", "Positive"][:num_attitude_groups]
+
+    if barrier_cuts is None or attitude_cuts is None:
+        raise ValueError("Unable to compute percentile cuts for grouping")
 
     # Assign groups
     barrier_case = f.when(f.col(barrier_var) < barrier_cuts["b_p33"], barrier_labels[0])

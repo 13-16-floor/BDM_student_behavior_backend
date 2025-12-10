@@ -10,6 +10,8 @@ Tests:
 - Integration tests
 """
 
+from collections.abc import Generator
+
 import pytest
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as f
@@ -30,8 +32,8 @@ from behavior_analysis.analysis.barrier_analysis import (
 )
 
 
-@pytest.fixture(scope="session")  # type: ignore[misc]
-def spark() -> SparkSession:
+@pytest.fixture(scope="session")
+def spark() -> Generator[SparkSession, None, None]:
     """Create Spark session for testing."""
     spark_session = (
         SparkSession.builder.master("local[1]")
@@ -44,7 +46,7 @@ def spark() -> SparkSession:
     spark_session.stop()
 
 
-@pytest.fixture  # type: ignore[misc]
+@pytest.fixture
 def sample_barrier_data(spark: SparkSession) -> DataFrame:
     """Create sample student data with barrier indicators (including school-level variables)."""
     schema = StructType(
@@ -282,6 +284,7 @@ class TestBarrierIndexConstruction:
             f.min("barrier_index").alias("min"), f.max("barrier_index").alias("max")
         ).first()
 
+        assert stats is not None
         assert stats["min"] >= 0
         assert stats["max"] <= 100
 

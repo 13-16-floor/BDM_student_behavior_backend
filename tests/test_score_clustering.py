@@ -17,7 +17,7 @@ from behavior_analysis.analysis.score_clustering import (
 )
 
 
-@pytest.fixture(scope="session")  # type: ignore[misc]
+@pytest.fixture(scope="session")
 def spark() -> SparkSession:
     """Create a Spark session for testing."""
     return (
@@ -29,7 +29,7 @@ def spark() -> SparkSession:
     )
 
 
-@pytest.fixture  # type: ignore[misc]
+@pytest.fixture
 def sample_student_data(spark: SparkSession) -> DataFrame:
     """Create sample student data for testing."""
     data = [

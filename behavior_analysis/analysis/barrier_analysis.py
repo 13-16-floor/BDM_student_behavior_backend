@@ -151,6 +151,9 @@ def standardize_column(df: DataFrame, column_name: str, output_col: str | None =
         f.stddev(f.col(column_name)).alias("std"),
     ).first()
 
+    if stats is None:
+        raise ValueError(f"Unable to compute statistics for column {column_name}")
+
     mean_val = stats["mean"]
     std_val = stats["std"]
 
@@ -231,11 +234,14 @@ def calculate_dimension_score(
     if handle_missing == "impute_mean":
         # Calculate mean for imputation
         for col in std_cols:
-            mean_val = working_df.select(f.mean(f.col(col))).first()[0]
-            if mean_val is not None:
-                working_df = working_df.withColumn(
-                    col, f.when(f.col(col).isNull(), mean_val).otherwise(f.col(col))
-                )
+            mean_row = working_df.select(f.mean(f.col(col))).first()
+            if mean_row is not None:
+                mean_val = mean_row[0]
+                if mean_val is not None:
+                    working_df = working_df.withColumn(
+                        col,
+                        f.when(f.col(col).isNull(), f.lit(mean_val)).otherwise(f.col(col)),
+                    )
     elif handle_missing == "impute_zero":
         for col in std_cols:
             working_df = working_df.withColumn(
@@ -243,7 +249,7 @@ def calculate_dimension_score(
             )
 
     # Calculate average across columns
-    dimension_expr = sum(f.col(col) for col in std_cols) / len(std_cols)
+    dimension_expr = sum(f.col(col) for col in std_cols) / f.lit(len(std_cols))
 
     # Apply reverse coding if needed
     if reverse_coding:
@@ -350,6 +356,9 @@ def construct_barrier_index(
     min_max = working_df.select(
         f.min("barrier_raw").alias("min_val"), f.max("barrier_raw").alias("max_val")
     ).first()
+
+    if min_max is None:
+        raise ValueError("Unable to compute min/max values for normalization")
 
     min_val = min_max["min_val"]
     max_val = min_max["max_val"]
@@ -1145,12 +1154,19 @@ def characterize_barrier_clusters(
             f.sum(weight_column).alias("weighted_count"),
         ).first()
 
+        if stats is None:
+            continue
+
         # Dimension means
         dimension_means = {}
         for dim_col in dimension_columns:
             if dim_col in df.columns:
-                mean_val = cluster_data.select(f.mean(dim_col)).first()[0]
-                dimension_means[dim_col] = float(mean_val) if mean_val is not None else None
+                mean_row = cluster_data.select(f.mean(dim_col)).first()
+                if mean_row is not None:
+                    mean_val = mean_row[0]
+                    dimension_means[dim_col] = float(mean_val) if mean_val is not None else None
+                else:
+                    dimension_means[dim_col] = None
 
         result[f"cluster_{cluster_id}"] = {
             "sample_count": stats["count"],

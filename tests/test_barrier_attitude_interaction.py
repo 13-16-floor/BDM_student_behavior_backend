@@ -10,6 +10,8 @@ Tests:
 - Comprehensive workflow
 """
 
+from collections.abc import Generator
+
 import pytest
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as f
@@ -31,8 +33,8 @@ from behavior_analysis.analysis.barrier_attitude_interaction import (
 )
 
 
-@pytest.fixture(scope="session")  # type: ignore[misc]
-def spark() -> SparkSession:
+@pytest.fixture(scope="session")
+def spark() -> Generator[SparkSession, None, None]:
     """Create Spark session for testing."""
     spark_session = (
         SparkSession.builder.master("local[1]")
@@ -45,7 +47,7 @@ def spark() -> SparkSession:
     spark_session.stop()
 
 
-@pytest.fixture  # type: ignore[misc]
+@pytest.fixture
 def sample_interaction_data(spark: SparkSession) -> DataFrame:
     """Create sample data with barrier index, attitudes, and control variables."""
     schema = StructType(
@@ -146,7 +148,7 @@ def sample_interaction_data(spark: SparkSession) -> DataFrame:
     return spark.createDataFrame(data, schema)
 
 
-@pytest.fixture  # type: ignore[misc]
+@pytest.fixture
 def interaction_config() -> InteractionConfig:
     """Create default interaction configuration."""
     return InteractionConfig(

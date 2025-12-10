@@ -21,7 +21,7 @@ from behavior_analysis.analysis.attitude_clustering import (
 )
 
 
-@pytest.fixture(scope="session")  # type: ignore[misc]
+@pytest.fixture(scope="session")
 def spark() -> SparkSession:
     """Create a Spark session for testing."""
     return (
@@ -33,7 +33,7 @@ def spark() -> SparkSession:
     )
 
 
-@pytest.fixture  # type: ignore[misc]
+@pytest.fixture
 def sample_attitude_data(spark: SparkSession) -> DataFrame:
     """Create sample student data with attitude dimensions for testing.
 
@@ -43,9 +43,23 @@ def sample_attitude_data(spark: SparkSession) -> DataFrame:
     """
     data = [
         # Format: (ID, Learning_Time, Skip_School, Math_Motivation, Perseverance, Weight)
-        ("S001", 4.0, 1.0, 4.0, 4.0, 1.2),  # Proactive: high time, never skip, high motivation
+        (
+            "S001",
+            4.0,
+            1.0,
+            4.0,
+            4.0,
+            1.2,
+        ),  # Proactive: high time, never skip, high motivation
         ("S002", 2.0, 2.0, 2.0, 2.0, 1.1),  # Average: medium on all
-        ("S003", 1.0, 4.0, 1.0, 1.0, 1.0),  # Disengaged: low time, skip often, low motivation
+        (
+            "S003",
+            1.0,
+            4.0,
+            1.0,
+            1.0,
+            1.0,
+        ),  # Disengaged: low time, skip often, low motivation
         ("S004", 4.0, 1.0, 3.0, 4.0, 0.9),  # Proactive variant
         ("S005", 2.0, 3.0, 2.0, 3.0, 1.3),  # Average variant
         ("S006", 1.0, 4.0, 1.0, 2.0, 1.0),  # Disengaged variant
@@ -110,7 +124,7 @@ class TestAttitudeFeatures:
 
     def test_create_features(self, sample_attitude_data: DataFrame) -> None:
         """Test feature creation with valid data."""
-        prepared_df = prepare_attitude_data(sample_attitude_data)
+        prepared_df, _ = prepare_attitude_data(sample_attitude_data)
         featured_df = create_attitude_features(prepared_df)
 
         # Should have new attitude_features column
@@ -121,7 +135,7 @@ class TestAttitudeFeatures:
 
     def test_features_dimension_count(self, sample_attitude_data: DataFrame) -> None:
         """Test that features have correct number of dimensions."""
-        prepared_df = prepare_attitude_data(sample_attitude_data)
+        prepared_df, _ = prepare_attitude_data(sample_attitude_data)
         create_attitude_features(prepared_df)
 
         # Should have 4 attitude dimensions
@@ -133,7 +147,7 @@ class TestAttitudeClustering:
 
     def test_perform_clustering(self, sample_attitude_data: DataFrame) -> None:
         """Test K-means clustering with valid data."""
-        prepared_df = prepare_attitude_data(sample_attitude_data)
+        prepared_df, _ = prepare_attitude_data(sample_attitude_data)
         featured_df = create_attitude_features(prepared_df)
         clustered_df, label_mapping = perform_attitude_clustering(featured_df, num_clusters=3)
 
@@ -154,7 +168,7 @@ class TestAttitudeClustering:
 
     def test_clustering_with_different_k(self, sample_attitude_data: DataFrame) -> None:
         """Test clustering with different k values."""
-        prepared_df = prepare_attitude_data(sample_attitude_data)
+        prepared_df, _ = prepare_attitude_data(sample_attitude_data)
         featured_df = create_attitude_features(prepared_df)
 
         for k in [2, 3, 4]:
@@ -168,7 +182,7 @@ class TestAttitudeLabels:
 
     def test_add_labels(self, sample_attitude_data: DataFrame) -> None:
         """Test adding attitude labels to clustered data."""
-        prepared_df = prepare_attitude_data(sample_attitude_data)
+        prepared_df, _ = prepare_attitude_data(sample_attitude_data)
         featured_df = create_attitude_features(prepared_df)
         clustered_df, label_mapping = perform_attitude_clustering(featured_df, num_clusters=3)
         labeled_df = add_attitude_labels(clustered_df, label_mapping)
