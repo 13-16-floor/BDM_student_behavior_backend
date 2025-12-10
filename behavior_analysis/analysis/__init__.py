@@ -28,6 +28,20 @@ from .barrier_analysis import (
     run_regression_with_ses,
     validate_required_columns,
 )
+from .barrier_attitude_interaction import (
+    HeterogeneityResults,
+    InteractionConfig,
+    InteractionResults,
+    apply_within_country_transformation,
+    create_attitude_composite_score,
+    create_interaction_term,
+    perform_comprehensive_interaction_analysis,
+    prepare_interaction_plot_data,
+    print_interaction_report,
+    print_stratified_report,
+    run_interaction_regression,
+    run_stratified_analysis,
+)
 from .basic_stats import calculate_column_mean, describe_dataset, get_column_statistics
 from .score_clustering import (
     add_cluster_labels,
@@ -68,4 +82,18 @@ __all__ = [
     "characterize_barrier_clusters",
     "perform_comprehensive_barrier_analysis",
     "print_barrier_analysis_report",
+    # Barrier × Attitude Interaction - data classes
+    "InteractionConfig",
+    "InteractionResults",
+    "HeterogeneityResults",
+    # Barrier × Attitude Interaction - core functions
+    "apply_within_country_transformation",
+    "create_attitude_composite_score",
+    "create_interaction_term",
+    "run_interaction_regression",
+    "run_stratified_analysis",
+    "prepare_interaction_plot_data",
+    "print_interaction_report",
+    "print_stratified_report",
+    "perform_comprehensive_interaction_analysis",
 ]
