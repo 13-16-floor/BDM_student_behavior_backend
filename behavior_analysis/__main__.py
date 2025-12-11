@@ -13,6 +13,17 @@ import warnings
 
 from pyspark.sql import DataFrame
 
+from .analysis.barrier_analysis import (
+    BarrierIndexConfig,
+    construct_barrier_index,
+    perform_comprehensive_barrier_analysis,
+    print_barrier_analysis_report,
+    validate_required_columns,
+)
+from .analysis.barrier_attitude_interaction import (
+    InteractionConfig,
+    perform_comprehensive_interaction_analysis,
+)
 from .analysis.score_clustering import (
     add_cluster_labels,
     get_cluster_statistics,
@@ -23,6 +34,14 @@ from .data.converter import SPSSToParquetConverter
 from .data.spark_manager import SparkSessionManager
 from .utils.file_utils import ensure_directory_exists
 from .utils.logger import setup_logger
+from .visualization.barrier_analysis_viz import (
+    create_all_barrier_visualizations,
+    export_results_to_csv,
+)
+from .visualization.barrier_attitude_interaction_viz import (
+    create_all_interaction_visualizations,
+    export_interaction_results_to_csv,
+)
 from .visualization.score_clustering_viz import create_all_visualizations
 
 
@@ -83,7 +102,266 @@ def perform_score_clustering_analysis(
     )
 
 
-def main(target_column: str | None = None) -> None:
+def perform_barrier_analysis(
+    student_df: DataFrame,
+    school_df: DataFrame,
+    config: AppConfig,
+    logger: logging.Logger,
+    include_score_clusters: bool = True,
+) -> DataFrame | None:
+    """
+    Perform comprehensive barrier analysis on student data.
+
+    This function performs the complete barrier analysis workflow:
+    1. Selects only required columns to avoid OOM
+    2. Joins student and school data
+    3. Validates required columns
+    4. Constructs barrier index from 4 dimensions
+    5. Adds score cluster labels from Part A
+    6. Runs 4 core analyses (regression, distribution, importance, clustering)
+    7. Generates and saves visualizations
+
+    Args:
+        student_df: Spark DataFrame containing student data (full dataset)
+        school_df: Spark DataFrame containing school data (full dataset)
+        config: Application configuration
+        logger: Logger instance
+        include_score_clusters: Whether to include cluster analysis from Part A
+
+    Returns:
+        DataFrame with barrier_index for further analysis, or None if failed
+    """
+    logger.info("\n" + "=" * 70)
+    logger.info("BARRIER ANALYSIS")
+    logger.info("=" * 70)
+
+    # Step 1: Select only required columns to avoid OOM
+    logger.info("\nSelecting required columns to optimize memory usage...")
+
+    # Define required columns
+    student_required_cols = [
+        # Join key
+        "CNTSCHID",
+        # Score and weights
+        "PV1MATH",
+        "W_FSTUWT",
+        # Control variables
+        "CNT",
+        "ESCS",
+        # Dimension 1: Access to Resources
+        "HOMEPOS",
+        "WORKHOME",
+        # Dimension 2: Internet Access
+        "ICTRES",
+        "ICTHOME",
+        "ICTAVHOM",
+        # Dimension 3: Learning Disabilities
+        "ST127Q01TA",
+        "ST127Q02TA",
+        "ST127Q03TA",
+        "ANXMAT",
+        # Attitude dimensions for interaction analysis
+        "ST296Q01JA",  # Learning Time (Math homework time)
+        "ST062Q01TA",  # School Discipline (skipped school days)
+        "MATHMOT",  # Math Motivation
+        "PERSEVAGR",  # Perseverance (WLE)
+        "GROSAGR",  # Growth Mindset (WLE)
+        "MATHEFF",  # Math Self-Efficacy (WLE)
+    ]
+
+    school_required_cols = [
+        # Join key
+        "CNTSCHID",
+        # Dimension 1: Access to Resources (school level)
+        "SC017Q01NA",
+        "SC017Q02NA",
+        "SC017Q03NA",
+        "SC017Q05NA",
+        # Dimension 4: Geographic Disadvantage
+        "SC001Q01TA",
+    ]
+
+    # Select columns from student data
+    logger.info(f"Selecting {len(student_required_cols)} columns from student data...")
+    student_subset = student_df.select(*student_required_cols)
+
+    # Select columns from school data
+    logger.info(f"Selecting {len(school_required_cols)} columns from school data...")
+    school_subset = school_df.select(*school_required_cols)
+
+    # Step 2: Join student and school data
+    logger.info("\nJoining student and school data on CNTSCHID...")
+    df_joined = student_subset.join(school_subset, on="CNTSCHID", how="left")
+
+    # Count joined records
+    joined_count = df_joined.count()
+    logger.info(f"Joined dataset: {joined_count:,} records")
+
+    # Step 3: Validate required columns (control variables only)
+    logger.info("\nValidating required columns...")
+    required_critical_cols = ["ESCS", "CNT", "SC001Q01TA"]
+    all_valid, missing_cols = validate_required_columns(df_joined, required_critical_cols)
+
+    if not all_valid:
+        error_msg = (
+            f"Cannot proceed with barrier analysis. Missing required columns: {missing_cols}"
+        )
+        logger.error(error_msg)
+        raise ValueError(error_msg)
+
+    logger.info("All required control variables validated successfully")
+
+    # Step 4: Configure barrier index
+    logger.info("\nConfiguring barrier dimensions...")
+    barrier_config = BarrierIndexConfig(
+        # Dimension 1: Access to Resources (home + school level)
+        access_to_resources_cols=[
+            "HOMEPOS",
+            "WORKHOME",
+            "SC017Q01NA",
+            "SC017Q02NA",
+            "SC017Q03NA",
+            "SC017Q05NA",
+        ],
+        # Dimension 2: Internet Access
+        internet_access_cols=["ICTRES", "ICTHOME", "ICTAVHOM"],
+        # Dimension 3: Learning Disabilities
+        learning_disabilities_cols=["ST127Q01TA", "ST127Q02TA", "ST127Q03TA", "ANXMAT"],
+        # Dimension 4: Geographic Disadvantage (school location)
+        geographic_isolation_cols=["SC001Q01TA"],
+        weights={
+            "access_to_resources": config.barrier.ACCESS_RESOURCES_WEIGHT,
+            "internet_access": config.barrier.INTERNET_ACCESS_WEIGHT,
+            "learning_disabilities": config.barrier.LEARNING_DISABILITIES_WEIGHT,
+            "geographic_isolation": config.barrier.GEOGRAPHIC_ISOLATION_WEIGHT,
+        },
+        handle_missing=config.barrier.MISSING_DATA_STRATEGY,
+        standardize=True,
+    )
+
+    # Step 5: Construct barrier index
+    logger.info("\nConstructing barrier index...")
+    df_with_barriers = construct_barrier_index(df_joined, barrier_config)
+    logger.info("Barrier index constructed successfully")
+
+    # Cache the DataFrame for reuse
+    df_with_barriers.cache()
+    logger.info("Cached DataFrame with barriers for analysis")
+
+    # Step 6: Add score clusters if requested
+    if include_score_clusters:
+        logger.info("\nAdding score cluster labels for cross-analysis...")
+        df_with_barriers = add_cluster_labels(
+            df_with_barriers, score_column="PV1MATH", cluster_column="score_cluster"
+        )
+
+    # Step 7: Perform comprehensive analysis
+    logger.info("\nPerforming comprehensive barrier analysis...")
+    results = perform_comprehensive_barrier_analysis(
+        df_with_barriers, barrier_config, include_clustering=True
+    )
+
+    # Step 8: Print report
+    logger.info("\nGenerating analysis report...")
+    print_barrier_analysis_report(results, verbose=True)
+
+    # Step 9: Generate visualizations
+    logger.info("\nGenerating visualizations...")
+    viz_dir = config.get_artifact_path("visualizations/barriers")
+    viz_paths = create_all_barrier_visualizations(results, viz_dir)
+
+    # Step 10: Export to CSV
+    logger.info("\nExporting results to CSV...")
+    csv_paths = export_results_to_csv(results, viz_dir)
+
+    logger.info("\n" + "=" * 70)
+    logger.info("BARRIER ANALYSIS COMPLETE")
+    logger.info("=" * 70)
+    logger.info(f"Visualizations saved to: {viz_dir}")
+    logger.info(f"Total visualizations: {len(viz_paths)}")
+    logger.info(f"Total CSV exports: {len(csv_paths)}")
+
+    # Return DataFrame with barriers for further analysis
+    # Note: DataFrame is still cached - caller should unpersist when done
+    return df_with_barriers
+
+
+def perform_interaction_analysis(
+    df_with_barriers: DataFrame,
+    config: AppConfig,
+    logger: logging.Logger,
+) -> None:
+    """
+    Perform comprehensive Barrier × Attitude interaction analysis.
+
+    This function analyzes how student attitudes interact with resource barriers
+    to affect academic performance. Uses within-country transformation to control
+    for country fixed effects.
+
+    Args:
+        df_with_barriers: DataFrame with barrier_index already constructed
+        config: Application configuration
+        logger: Logger instance
+    """
+    logger.info("\n" + "=" * 70)
+    logger.info("BARRIER × ATTITUDE INTERACTION ANALYSIS")
+    logger.info("=" * 70)
+
+    # Configure interaction analysis
+    logger.info("\nConfiguring interaction analysis...")
+    interaction_config = InteractionConfig(
+        score_column="PV1MATH",
+        barrier_column="barrier_index",
+        attitude_columns=["MATHMOT", "PERSEVAGR", "GROSAGR", "MATHEFF"],
+        country_column="CNT",
+        weight_column="W_FSTUWT",
+        ses_column="ESCS",
+        include_ses=True,
+    )
+
+    # Validate required columns
+    required_cols = (
+        [interaction_config.score_column, interaction_config.barrier_column]
+        + (interaction_config.attitude_columns or [])
+        + [interaction_config.country_column, interaction_config.weight_column]
+    )
+    if interaction_config.include_ses:
+        required_cols.append(interaction_config.ses_column)
+
+    missing_cols = [col for col in required_cols if col not in df_with_barriers.columns]
+    if missing_cols:
+        error_msg = f"Missing required columns for interaction analysis: {missing_cols}"
+        logger.error(error_msg)
+        raise ValueError(error_msg)
+
+    logger.info("All required columns validated successfully")
+
+    # Perform comprehensive analysis
+    logger.info("\nPerforming comprehensive interaction analysis...")
+    results = perform_comprehensive_interaction_analysis(df_with_barriers, interaction_config)
+
+    # Generate visualizations
+    logger.info("\nGenerating visualizations...")
+    viz_dir = config.get_artifact_path("visualizations/interaction")
+    viz_paths = create_all_interaction_visualizations(results, viz_dir)
+
+    # Export to CSV
+    logger.info("\nExporting results to CSV...")
+    csv_paths = export_interaction_results_to_csv(results, viz_dir)
+
+    logger.info("\n" + "=" * 70)
+    logger.info("INTERACTION ANALYSIS COMPLETE")
+    logger.info("=" * 70)
+    logger.info(f"Visualizations saved to: {viz_dir}")
+    logger.info(f"Total visualizations: {len(viz_paths)}")
+    logger.info(f"Total CSV exports: {len(csv_paths)}")
+
+
+def main(
+    target_column: str | None = None,
+    run_barrier_analysis: bool = True,
+    run_interaction_analysis: bool = True,
+) -> None:
     """
     Main application entrypoint.
 
@@ -92,10 +370,14 @@ def main(target_column: str | None = None) -> None:
     2. Convert SPSS files to Parquet (if not already converted)
     3. Start Spark session
     4. Load student data
-    5. Calculate statistics for target column
+    5. Phase 2: Perform score-based clustering analysis (Part A)
+    6. Phase 3: Perform barrier analysis (Part B)
+    7. Phase 4: Perform barrier × attitude interaction analysis (Part C)
 
     Args:
         target_column: Column name to analyze. Defaults to ST059Q01TA.
+        run_barrier_analysis: Whether to run Part B barrier analysis
+        run_interaction_analysis: Whether to run Part C interaction analysis
     """
     # Default target column
     if target_column is None:
@@ -167,7 +449,8 @@ def main(target_column: str | None = None) -> None:
             logger.info(f"\nLoading student data from: {student_parquet_path}")
 
             student_df = spark.read.parquet(student_parquet_path)
-            logger.info(f"Student data loaded: {student_df.count():,} records")
+            student_count = student_df.count()
+            logger.info(f"Student data loaded: {student_count:,} records")
 
             # Verify required columns exist
             required_columns = ["PV1MATH", "W_FSTUWT"]
@@ -179,6 +462,56 @@ def main(target_column: str | None = None) -> None:
 
             # Perform score-based clustering analysis
             perform_score_clustering_analysis(student_df, config, logger)
+
+            # Phase 3: Barrier Analysis
+            df_with_barriers = None
+            if run_barrier_analysis:
+                logger.info("\n" + "-" * 70)
+                logger.info("PHASE 3: Barrier Analysis")
+                logger.info("-" * 70)
+
+                # Load school data for barrier analysis
+                school_parquet_path = config.get_parquet_path("school")
+                logger.info(f"\nLoading school data from: {school_parquet_path}")
+
+                school_df = spark.read.parquet(school_parquet_path)
+                school_count = school_df.count()
+                logger.info(f"School data loaded: {school_count:,} records")
+
+                try:
+                    df_with_barriers = perform_barrier_analysis(
+                        student_df,
+                        school_df,
+                        config,
+                        logger,
+                        include_score_clusters=True,
+                    )
+                except Exception as e:  # noqa: BLE001
+                    logger.error("Barrier analysis failed: %s", e, exc_info=True)
+                    print(f"\n✗ Barrier analysis failed: {e}", flush=True)
+                    # Continue execution even if barrier analysis fails
+
+            # Phase 4: Barrier × Attitude Interaction Analysis
+            if run_interaction_analysis and df_with_barriers is not None:
+                logger.info("\n" + "-" * 70)
+                logger.info("PHASE 4: Barrier × Attitude Interaction Analysis")
+                logger.info("-" * 70)
+
+                try:
+                    perform_interaction_analysis(df_with_barriers, config, logger)
+                except Exception as e:  # noqa: BLE001
+                    logger.error("Interaction analysis failed: %s", e, exc_info=True)
+                    print(f"\n✗ Interaction analysis failed: {e}", flush=True)
+                    # Continue execution even if interaction analysis fails
+                finally:
+                    # Unpersist the cached DataFrame
+                    if df_with_barriers is not None:
+                        df_with_barriers.unpersist()
+                        logger.info("Unpersisted cached DataFrame with barriers")
+            elif run_interaction_analysis and df_with_barriers is None:
+                logger.warning(
+                    "Skipping interaction analysis: barrier analysis was not run or failed"
+                )
 
     except KeyboardInterrupt:
         logger.info("\nApplication interrupted by user")
